@@ -26,3 +26,5 @@ DP monthly from july 2021 to aug 2026
 
 #### Other
 Midwest premium after June 2026 is the front-month futures settle at month-end, as your README describes, because the USGS monthly series stops at June 2026
+Interesting to look at scrap an semi imports increase to make up for lower crude imports
+Interesting to look at inventory changes in aluminium in the US and Canada over 2025-2026

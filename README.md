@@ -39,16 +39,19 @@ Two consequences for the model:
 **Landed cost by route (USD/t, monthly):**
 
 ```
-Landed(origin, m) = LME(m) + P_origin(m) + Freight_origin + t_origin(m) × (LME(m) + P_origin(m))
-Gap(origin, m)    = (LME(m) + MWP(m)) − Landed(origin, m)    # = MWP − [P + F + t·(LME + P)]
+FOB(origin, m)    = LME(m) + P_origin(m)                     # what the tonne is worth where it sits
+Landed(origin, m) = FOB(origin, m) + Freight_origin→MW + t_origin(m) × FOB(origin, m)
+Gap(origin, m)    = (LME(m) + MWP(m)) − Landed(origin, m)
 ```
 
-The model covers two routes:
+`P_origin` is the premium the tonne gives up by going to the US instead of its best alternative. That alternative differs by route, so the two routes use different European premiums:
 
-- **Canada → Midwest.** This is the marginal tonne, about 60–75% of US crude imports. `P_origin` is the Rotterdam duty-unpaid premium (DUP), used as Canadian metal's opportunity cost. Freight is short rail or truck haul.
-- **Rotterdam → Midwest.** This is the world-market tonne. `P_origin` = DUP, and freight is transatlantic plus inland. Europe ships almost no primary metal to the US, so this route is a *would-it-pay* test rather than an observed flow.
+- **Rotterdam → Midwest: `P_origin` = DUP.** This is the world-market tonne. Metal in Rotterdam bonded warehouses that is re-exported never clears EU customs, so it never pays the EU's 3% duty. Its opportunity cost is the duty-unpaid price, LME + DUP. Using DP here would charge the US route with an EU duty it never pays (about 3% × (LME + DUP), ≈ 70–90 $/t). Freight is transatlantic plus inland. Europe ships almost no primary metal to the US, so this route is a *would-it-pay* test rather than an observed flow.
+- **Canada → Midwest: `P_origin` = DP − Freight_Canada→Rotterdam.** This is the marginal tonne, about 60–75% of US crude imports. Canadian aluminium enters the EU duty-free under CETA, so a Canadian tonne diverted to Europe can be cleared and sold at the *duty-paid* price without paying the duty. Its alternative is therefore LME + DP, *netted back* to Canada by subtracting transatlantic freight. Adding the full Rotterdam premium and then Canada→MW freight on top would price Canadian metal as if it were already in Rotterdam. Freight to the Midwest is short rail or truck haul.
 
-Freight is an assumption with a sensitivity band, because no free series exists. All results are shown at low, mid and high freight.
+Freight is an assumption with a sensitivity band, because no free series exists. All results are shown at low, mid and high freight. The Canada route has two freight legs: the netback leg (Canada → Rotterdam) and the delivery leg (Canada → Midwest).
+
+**Tariff base.** US duty is charged on the customs value of the actual import, i.e. the transaction price excluding international freight. `FOB` above is a proxy for that value, not the invoice itself.
 
 **Pass-through:** `β = ΔMWP / ΔLanded` for each tariff step (12 Mar 2025, 4 Jun 2025). It is measured on monthly data and on the daily front-month curve around each date. The report shows how long it takes the gap to close, not only the jump on the day.
 
@@ -63,18 +66,18 @@ Freight is an assumption with a sensitivity band, because no free series exists.
 
 | File | Series | Frequency | Coverage | Notes |
 |---|---|---|---|---|
-| `lme_aluminium.csv` | LME cash, 3M, stocks | Daily | Jan 2018 – Sep 2026 | |
-| `midwest_premium.csv` | MW premium and all-in MW price (USGS) | **Monthly** | Aug 2020 – Jun 2026 | Monthly averages, not daily spot |
-| `midwest_premium_curve.csv` | LME MW premium futures, M01–M15 | Daily | Mar 2019 – Aug 2026 | M01 at month-end ≈ that month's average, which extends the monthly series to Aug 2026. Back months are illiquid or stale. |
-| `europe_duty_unpaid_premium.csv` | Rotterdam DUP | Daily → monthly | Mar 2019 – **Oct 2025** | Ends before the most interesting period |
-| `europe_duty_paid_premium.csv` | Rotterdam DP (LME settlement) | Monthly | Jul 2021 – Aug 2026 | |
+| `lme_aluminium.csv` | LME cash, 3M, stocks (westmetall.com) | Daily | Jan 2018 – Oct 2026 | Monthly means match the USGS LME cash column to within 0.5 $/t. |
+| `midwest_premium.csv` | MW premium and all-in MW price (USGS, Platts monthly averages) | **Monthly** | Aug 2020 – Jun 2026 | Monthly averages, not daily spot. Premium = all-in MW − LME cash. |
+| `midwest_premium_curve.csv` | LME MW premium futures (Platts), M01–M15 | Daily | Mar 2019 – Aug 2026 | Cash-settled on the monthly average of the Platts MW premium. M01 is the trade date's own calendar month, so it is part-fixed and converges to that month's average. M01 at month-end matches the USGS monthly premium within ~10 $/t (median; max 34), which justifies extending the monthly series to Aug 2026. **M01 is not a spot price**: within a month it lags the spot premium, and it switches contract on the first trading day of each month. Back months are illiquid or stale. |
+| `europe_duty_unpaid_premium.csv` | Rotterdam DUP (investing.com continuous series) | Daily → monthly | Mar 2019 – **Oct 2025** | Ends before the most interesting period. Looks like a rolling front-month futures series rather than the Fastmarkets assessment itself (month-end roll spikes, ~70% unchanged days). Source definition not yet confirmed. |
+| `europe_duty_paid_premium.csv` | Rotterdam DP (LME ED final settlement = monthly average of Fastmarkets assessment) | Monthly | Jul 2021 – Aug 2026 | |
 | `europe_duty_unpaid_premium_reconstructed.csv` | Rotterdam DUP, observed and then reconstructed from DP | Monthly | Jul 2021 – Aug 2026 | `source` column marks reconstructed months; low/mid/high band. See below. |
 | `us_imports_by_country.csv` | US imports by country: crude, semis, scrap (USGS) | Monthly | Aug 2021 – Jun 2026 | Contains `Total` and `Other` rows, so do not sum across countries. Two months are derived from year-to-date differences. |
 | `canada_exports_by_country.csv` | Canadian exports by destination, HS 7601 (unwrought) and 7602 (scrap), tonnes and FOB USD (UN Comtrade, from StatCan) | Monthly | 7601: Jan 2018 – Jul 2026; 7602: to Oct 2024 so far | `country == "World"` is the total, so do not sum it with the rest. Comtrade drops the weight in about 9 months for the US and World rows. These are filled from value ÷ interpolated unit value (`qty_imputed`). Exports to the US match US-reported imports from Canada within about 3% in most quarters. |
 
 ### Gaps and how to handle them
 
-- **DUP after Oct 2025: reconstructed.** Duty-paid metal carries the EU import duty (3% on unwrought aluminium, charged on LME + DUP), so `DUP = (DP − r·LME) / (1 + r)`. Here `r` is the *effective* duty rate. It is lower than 3% because part of the metal in Rotterdam comes from duty-free origins. Fitted on the overlap months, r has a median of 2.7% and a 10–90% range of 1.9–3.3%. The backtest error is about ±13 $/t. Feb–May 2025 is the exception: r collapsed to about 0% as metal turned away from the US flooded Europe, and the reconstruction overstates DUP by 50–80 $/t in those months. Plot reconstructed months as a dashed line and carry the band into the landed-cost sensitivity.
+- **DUP after Oct 2025: reconstructed.** Duty-paid metal carries the EU import duty (3% on unwrought aluminium, charged on LME + DUP), so `DUP = (DP − r·LME) / (1 + r)`. Here `r` is the *effective* duty rate. It is lower than 3% because part of the metal in Rotterdam comes from duty-free origins. Fitted on the overlap months, r has a median of 2.7% and a 10–90% range of 1.9–3.3%. The backtest error is about ±13 $/t. Feb–May 2025 is the exception: r collapsed to about 0% as metal turned away from the US flooded Europe, and the reconstruction overstates DUP by 50–80 $/t in those months. Plot reconstructed months as a dashed line and carry the band into the landed-cost sensitivity. DUP is needed only for the Rotterdam route; the Canada route uses DP, which is observed through Aug 2026.
 - **Freight.** Fixed assumptions with a range, citing whatever public figures are available.
 - **US-located inventory.** Not on hand. The global LME stock series is used, and the memo states this limitation.
 
