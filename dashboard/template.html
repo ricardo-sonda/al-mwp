@@ -1,0 +1,657 @@
+<title>Midwest Premium Tariff Pass-Through</title>
+<meta name="description" content="How the US Midwest aluminium premium priced the 2025 Section 232 tariffs: pass-through, futures, hedging and trade flows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a desk research note. Answer first, then the tariff timeline, six headline figures,
+   and the four strands of the README in order, each a short claim over its evidence charts. */
+:root {
+  --bg: #f3f4f5;
+  --surface: #fcfcfb;
+  --ink: #13171c;
+  --ink-2: #4b525b;
+  --muted: #80868e;
+  --rule: #dcdfe3;
+  --grid: #e6e8eb;
+  --accent: #1d5fa8;
+  --s-blue: #2a78d6; --s-orange: #eb6834; --s-aqua: #1baf7a; --s-yellow: #eda100;
+  --s-magenta: #e87ba4; --s-green: #008300; --s-violet: #4a3aa7; --s-red: #e34948;
+  --s-neutral: #a3a8af; --s-faint: #d3d7dc;
+  --good: #006300; --bad: #b42f2f;
+  --f-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1012; --surface: #17191c; --ink: #f1f3f5; --ink-2: #b8bec5; --muted: #858b93;
+    --rule: #2b2f34; --grid: #24282c; --accent: #6aa6ec;
+    --s-blue: #3987e5; --s-orange: #d95926; --s-aqua: #199e70; --s-yellow: #c98500;
+    --s-magenta: #d55181; --s-green: #008300; --s-violet: #9085e9; --s-red: #e66767;
+    --s-neutral: #6b7179; --s-faint: #3a3f45; --good: #0ca30c; --bad: #e66767;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1012; --surface: #17191c; --ink: #f1f3f5; --ink-2: #b8bec5; --muted: #858b93;
+  --rule: #2b2f34; --grid: #24282c; --accent: #6aa6ec;
+  --s-blue: #3987e5; --s-orange: #d95926; --s-aqua: #199e70; --s-yellow: #c98500;
+  --s-magenta: #d55181; --s-green: #008300; --s-violet: #9085e9; --s-red: #e66767;
+  --s-neutral: #6b7179; --s-faint: #3a3f45; --good: #0ca30c; --bad: #e66767;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); margin: 0; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 40px 64px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+p { margin: 0; }
+a { color: var(--accent); }
+.eyebrow { font: 500 11px/1.4 var(--f-data); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* Header */
+header.top { display: grid; gap: 14px; max-width: 70ch; }
+header.top h1 { font-size: clamp(28px, 4.2vw, 44px); line-height: 1.08; font-weight: 700; letter-spacing: -.01em; }
+.answer { font-size: 18px; line-height: 1.5; color: var(--ink-2); }
+.answer strong { color: var(--ink); font-weight: 600; }
+.meta { font: 12px/1.5 var(--f-data); color: var(--muted); }
+
+/* Tariff timeline */
+.timeline { margin: 32px 0 0; padding: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.timeline li { list-style: none; padding: 14px 16px 14px 0; display: grid; gap: 4px; align-content: start; }
+.timeline li + li { padding-left: 16px; border-left: 1px solid var(--rule); }
+.tl-date { font: 500 12px/1.3 var(--f-data); color: var(--muted); font-variant-numeric: tabular-nums; }
+.tl-rate { font: 600 20px/1.2 var(--f-display); }
+.tl-what { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+.tl-chip { display: inline-block; font: 500 10px/1 var(--f-data); letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 6px; border-radius: 3px; border: 1px solid var(--rule); color: var(--muted); justify-self: start; }
+
+/* KPI tiles */
+.kpis { margin-top: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;
+  background: var(--rule); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.kpi { background: var(--surface); padding: 18px 20px 20px; display: grid; gap: 6px; align-content: start; }
+.kpi .label { font-size: 13px; color: var(--ink-2); }
+.kpi .value { font: 600 30px/1.1 var(--f-display); letter-spacing: -.01em; }
+.kpi .value small { font: 500 14px var(--f-body); color: var(--muted); letter-spacing: 0; }
+.kpi .ctx { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.kpi .strand { font: 500 10px/1 var(--f-data); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+
+/* Strands */
+section.strand { margin-top: 56px; display: grid; gap: 20px; }
+.strand-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 16px; align-items: baseline; max-width: 900px; }
+.strand-no { font: 700 15px/1 var(--f-data); color: var(--accent); grid-row: span 2; padding-top: 6px; }
+.strand-head h2 { font-size: clamp(22px, 2.6vw, 28px); font-weight: 600; line-height: 1.2; }
+.strand-head p { color: var(--ink-2); max-width: 72ch; }
+
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.span2 { grid-column: span 2; }
+figure.panel { margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 18px 18px 14px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+figure.panel h3 { font-size: 16px; font-weight: 600; line-height: 1.3; }
+figure.panel .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.cw { position: relative; height: 280px; min-width: 0; }
+.cw.tall { height: 330px; }
+.cw.short { height: 190px; }
+.take { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; border-top: 1px solid var(--grid); padding-top: 10px; }
+.take b { color: var(--ink); font-weight: 600; }
+
+details.data summary { cursor: pointer; font: 500 12px var(--f-data); color: var(--muted); list-style: none; display: inline-flex; gap: 6px; align-items: center; }
+details.data summary::-webkit-details-marker { display: none; }
+details.data summary::before { content: "+"; display: inline-block; width: 10px; }
+details.data[open] summary::before { content: "−"; }
+details.data summary:hover { color: var(--ink); }
+details.data summary:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.tbl { overflow-x: auto; max-height: 260px; overflow-y: auto; margin-top: 8px; border: 1px solid var(--grid); border-radius: 4px; }
+.tbl table { border-collapse: collapse; font: 12px/1.4 var(--f-data); font-variant-numeric: tabular-nums; width: 100%; }
+.tbl th, .tbl td { padding: 4px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--grid); }
+.tbl th:first-child, .tbl td:first-child { text-align: left; }
+.tbl thead th { position: sticky; top: 0; background: var(--surface); color: var(--ink-2); font-weight: 500; }
+
+/* Caveats */
+.caveats { margin-top: 56px; border-top: 1px solid var(--rule); padding-top: 24px; display: grid; gap: 16px; }
+.caveats h2 { font-size: 20px; font-weight: 600; }
+.cav-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 32px; padding: 0; margin: 0; }
+.cav-list li { list-style: none; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+.cav-list b { color: var(--ink); font-weight: 600; }
+footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted); }
+
+@media (max-width: 980px) {
+  .grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .timeline { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .timeline li:nth-child(4) { border-left: 0; padding-left: 0; }
+  .timeline li:nth-child(n+4) { border-top: 1px solid var(--rule); }
+}
+@media (max-width: 760px) {
+  .grid, .grid.three { grid-template-columns: minmax(0, 1fr); }
+  .span2 { grid-column: auto; }
+  .kpis { grid-template-columns: minmax(0, 1fr); }
+  .cav-list { grid-template-columns: minmax(0, 1fr); }
+  .timeline { grid-template-columns: minmax(0, 1fr); }
+  .timeline li, .timeline li + li { border-left: 0; padding-left: 0; }
+  .timeline li + li { border-top: 1px solid var(--rule); }
+  .cw, .cw.short, .cw.tall { height: 260px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Section 232 · US Midwest aluminium premium · research summary</span>
+    <h1>Has the Midwest premium priced in the Section 232 tariffs?</h1>
+    <p class="answer"><strong>The physical premium did, in full. The futures curve did not.</strong>
+      Import parity explains the premium at the statutory 25% and 50% rates, while the forward curve kept pricing a relief that never came.
+      The tariff also raised the LME hedge ratio of US-delivered metal above 1 and pushed Canadian metal toward Europe.</p>
+    <p class="meta" id="asof"></p>
+  </header>
+
+  <ol class="timeline" aria-label="Tariff timeline">
+    <li><span class="tl-date">12 Mar 2025</span><span class="tl-rate">25%</span><span class="tl-what">All exemptions end. First step that hits the Canadian tonne.</span></li>
+    <li><span class="tl-date">4 Jun 2025</span><span class="tl-rate">50%</span><span class="tl-what">Rate doubled for all origins (UK stays at 25%).</span></li>
+    <li><span class="tl-date">2 Mar 2026</span><span class="tl-rate">Hormuz</span><span class="tl-what">Strait closed. Gulf supply shock, kept apart from the tariff in every test.</span><span class="tl-chip">Not a tariff step</span></li>
+    <li><span class="tl-date">2 Apr 2026</span><span class="tl-rate">50%</span><span class="tl-what">Customs-value overhaul for derivatives. No change for unwrought metal.</span></li>
+    <li><span class="tl-date">20–22 Aug 2026</span><span class="tl-rate">50%</span><span class="tl-what">US signals a cut for Canada to 25%; talks collapse.</span></li>
+  </ol>
+
+  <div class="kpis" id="kpis"></div>
+
+  <!-- 1. PRICE -->
+  <section class="strand" id="price">
+    <div class="strand-head">
+      <span class="strand-no">1</span>
+      <h2>Price: the premium passed the tariff through in full</h2>
+      <p>Import parity is what it costs to land a Canadian tonne in the Midwest: LME + its European alternative premium (Rotterdam duty-paid, netted back) + freight + the tariff on that value. If the premium sits at parity, the tariff is fully passed through.</p>
+    </div>
+    <div class="grid">
+      <figure class="panel span2">
+        <figcaption><h3>Midwest premium against Canada import parity</h3><p class="sub">$/t, monthly. Parity = landed cost − LME at mid freight; shaded band = low–high freight.</p></figcaption>
+        <div class="cw tall"><canvas id="c-price" role="img" aria-label="Line chart of the Midwest premium and Canada import parity premium, 2023 to 2026"></canvas></div>
+        <p class="take" id="t-price"></p>
+        <details class="data" data-chart="c-price"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>Tariff rate implied by the premium</h3><p class="sub">%, Canada route at mid freight. The rate at which import parity equals the observed premium.</p></figcaption>
+        <div class="cw"><canvas id="c-implied" role="img" aria-label="Line chart of implied tariff rates against the statutory rate"></canvas></div>
+        <p class="take" id="t-implied"></p>
+        <details class="data" data-chart="c-implied"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>Futures curve slope at month-end</h3><p class="sub">M03 − M01, $/t. Below zero = backwardation, the market expects the premium to fall.</p></figcaption>
+        <div class="cw"><canvas id="c-slope" role="img" aria-label="Bar chart of the MW futures curve slope at month-end"></canvas></div>
+        <p class="take">The curve stayed <b>backwardated through most of the 50% regime</b>, between −120 and −230 $/t in Aug and Oct–Dec 2025. The front contracts still rose ~400 $/t (+48%) within about a week of the 50% announcement.</p>
+        <details class="data" data-chart="c-slope"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 2. FUTURES -->
+  <section class="strand" id="futures">
+    <div class="strand-head">
+      <span class="strand-no">2</span>
+      <h2>Futures: the curve priced a relief that never came</h2>
+      <p>At each month-end, the M03 contract is the market's forecast of the premium two months out. It is tested against two benchmarks, no change and Canada parity at the rate in force, with Newey–West errors. Forecasts whose horizon spans a tariff step are left out of the statistics.</p>
+    </div>
+    <div class="grid">
+      <figure class="panel span2">
+        <figcaption><h3>Realised premium against the forecast made two months earlier</h3><p class="sub">$/t, plotted at the month being forecast.</p></figcaption>
+        <div class="cw"><canvas id="c-fcst" role="img" aria-label="Line chart of the realised premium, the M03 futures forecast and the Canada parity forecast"></canvas></div>
+        <details class="data" data-chart="c-fcst"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel span2">
+        <figcaption><h3>Forecast error of M03</h3><p class="sub">Realised − M03, $/t. Above zero = the curve was too low. Bars are coloured by regime.</p></figcaption>
+        <div class="cw short"><canvas id="c-err" role="img" aria-label="Bar chart of M03 forecast errors by target month, coloured by regime"></canvas></div>
+        <p class="take" id="t-err"></p>
+        <details class="data" data-chart="c-err"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+    </div>
+    <div class="grid three">
+      <figure class="panel">
+        <figcaption><h3>Forecast accuracy by regime</h3><p class="sub">RMSE, $/t. Lower is better.</p></figcaption>
+        <div class="cw"><canvas id="c-rmse" role="img" aria-label="Grouped bar chart of forecast RMSE by regime"></canvas></div>
+        <p class="take">Under 50% the curve did <b>worse than both benchmarks</b>. Before the tariff it matched no change.</p>
+        <details class="data" data-chart="c-rmse"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>Backtest: buy M03 below Canada parity</h3><p class="sub">Mean P&amp;L per trade, $/t, held to settlement.</p></figcaption>
+        <div class="cw"><canvas id="c-rule" role="img" aria-label="Bar chart comparing the parity rule with always long"></canvas></div>
+        <p class="take" id="t-rule"></p>
+        <details class="data" data-chart="c-rule"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>August 2026: the Canada-only cut</h3><p class="sub">Change, $/t. Model move against the observed market move.</p></figcaption>
+        <div class="cw"><canvas id="c-aug" role="img" aria-label="Bar chart comparing the modelled parity drop with the CME futures drop"></canvas></div>
+        <p class="take">The market moved <b>less than a third</b> of the Canada parity cut. That fits Canada not being the marginal supplier to the US.</p>
+        <details class="data" data-chart="c-aug"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 3. RISK -->
+  <section class="strand" id="risk">
+    <div class="strand-head">
+      <span class="strand-no">3</span>
+      <h2>Risk: a 1:1 LME hedge is too small under an ad valorem tariff</h2>
+      <p>A tariff charged on value makes the parity premium move with LME: ∂MWP/∂LME = t. A tonne of US-delivered metal then moves like 1 + t tonnes of LME, so at 50% theory says 1.5.</p>
+    </div>
+    <div class="grid three">
+      <figure class="panel span2">
+        <figcaption><h3>Minimum-variance LME hedge ratio for the all-in Midwest price</h3><p class="sub">Tonnes of LME per tonne of US-delivered metal, rolling 12 months of monthly changes.</p></figcaption>
+        <div class="cw"><canvas id="c-hedge" role="img" aria-label="Line chart of the rolling hedge ratio against the theoretical 1 plus t"></canvas></div>
+        <p class="take" id="t-hedge"></p>
+        <details class="data" data-chart="c-hedge"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>Residual risk after hedging</h3><p class="sub">Std. dev. of monthly changes, $/t.</p></figcaption>
+        <div class="cw"><canvas id="c-resid" role="img" aria-label="Grouped bar chart of residual risk by regime and hedge"></canvas></div>
+        <p class="take">With a 1:1 hedge, risk rose <b>from 50 to 90 $/t</b>. The 90 includes the Gulf shock.</p>
+        <details class="data" data-chart="c-resid"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel span2">
+        <figcaption><h3>How much of an LME move the MW futures curve picks up</h3><p class="sub">β of a fixed MW futures contract on LME 3M over the same window, weekly data, with 95% intervals (HAC).</p></figcaption>
+        <div class="cw"><canvas id="c-beta" role="img" aria-label="Dot plot of weekly betas by horizon and regime with confidence intervals"></canvas></div>
+        <details class="data" data-chart="c-beta"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>What this means for a hedger</h3><p class="sub">From the weekly and lead–lag regressions.</p></figcaption>
+        <p class="take" style="border-top:0;padding-top:0">The curve reacts to LME <b>one to two months late</b>. The beta is ~0 at one week and reaches 0.7 at eight weeks under 50%, close to t = 0.5.</p>
+        <p class="take">This week's LME move <b>predicts the next four weeks</b> of futures moves, even holding those weeks' LME moves fixed. A daily delta understates the premium's LME exposure.</p>
+        <p class="take">The LME MW settlements are often stale, so these weekly tests should be re-run on CME AUP data.</p>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 4. FLOWS -->
+  <section class="strand" id="flows">
+    <div class="strand-head">
+      <span class="strand-no">4</span>
+      <h2>Flows: Canadian metal went to Europe, and the US bought semis and scrap</h2>
+      <p>Monthly US imports and Canadian exports, compared with a pre-tariff baseline (Mar 2024 – Feb 2025) and the 50% regime before Hormuz (Jul 2025 – Mar 2026).</p>
+    </div>
+    <div class="grid">
+      <figure class="panel span2">
+        <figcaption><h3>US crude aluminium imports by origin</h3><p class="sub">kt per month, HTS 7601 (USGS).</p></figcaption>
+        <div class="cw"><canvas id="c-origin" role="img" aria-label="Stacked bar chart of US crude aluminium imports by origin"></canvas></div>
+        <details class="data" data-chart="c-origin"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>Change by origin under 50%</h3><p class="sub">% change in average monthly crude imports, Jul 25–Mar 26 against baseline.</p></figcaption>
+        <div class="cw"><canvas id="c-ochg" role="img" aria-label="Horizontal bar chart of percentage change in imports by origin"></canvas></div>
+        <p class="take" id="t-ochg"></p>
+        <details class="data" data-chart="c-ochg"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>Canadian unwrought exports by destination</h3><p class="sub">kt per month, HS 7601 (UN Comtrade).</p></figcaption>
+        <div class="cw"><canvas id="c-cax" role="img" aria-label="Stacked bar chart of Canadian unwrought aluminium exports by destination"></canvas></div>
+        <p class="take" id="t-cax"></p>
+        <details class="data" data-chart="c-cax"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel span2">
+        <figcaption><h3>US aluminium imports by product</h3><p class="sub">kt per month, quarterly average, all origins.</p></figcaption>
+        <div class="cw"><canvas id="c-prod" role="img" aria-label="Stacked bar chart of US aluminium imports by product, quarterly"></canvas></div>
+        <p class="take" id="t-prod"></p>
+        <details class="data" data-chart="c-prod"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+    </div>
+  </section>
+
+  <section class="caveats">
+    <h2>Read these results with the caveats</h2>
+    <ul class="cav-list">
+      <li><b>Freight is an assumption.</b> No free series exists, so every parity result carries a low–high band. Before 2025 the Canada route sat 80–180 $/t above parity at a 0% tariff, so small gaps are not arbitrage.</li>
+      <li><b>Hormuz is a separate shock.</b> The Strait closed on 2 Mar 2026 and drove the jump in Rotterdam premiums and the fall in Gulf imports. Tariff attribution uses months up to Feb 2026.</li>
+      <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half the CME size. Stale quotes are flagged in every test.</li>
+      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime. The trading rule is in-sample and before costs.</li>
+      <li><b>Rotterdam duty-unpaid after Oct 2025 is reconstructed</b> from duty-paid at an effective EU duty of 2.7% (backtest error ±13 $/t). The Canada route uses duty-paid, which is observed.</li>
+      <li><b>Aug 2026 is not fully fixed.</b> The last premium is M01 on 28 Aug. The CME move is from press reports, not settlement data.</li>
+    </ul>
+  </section>
+
+  <footer class="src" id="src"></footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const D = __DATA__;
+
+/* ---------- formatting ---------- */
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmtM = s => { const [y, m] = s.split("-"); return `${MON[+m - 1]} ${y.slice(2)}`; };
+const nf0 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+const n0 = v => v == null ? "–" : nf0.format(Math.round(v)).replace("-", "−");
+const n1 = v => v == null ? "–" : v.toFixed(1).replace("-", "−");
+const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + nf0.format(Math.abs(Math.round(v)));
+const pct = v => sgn(v) + "%";
+
+/* ---------- text filled from the data ---------- */
+const FS = D.forecast.stats, IR = D.implied_regimes, HR = D.hedge_regimes, OC = D.origin_change, PC = D.product_change, CX = D.canada_x_change;
+document.getElementById("asof").textContent =
+  `Data through: premium ${fmtM(D.data_through.premium)} · US imports ${fmtM(D.data_through.imports)} · Canadian exports ${fmtM(D.data_through.canada)}. All figures recomputed from the repo's data files.`;
+
+const KPIS = [
+  { s: "Price", label: "Tariff rate implied by the premium", value: `${Math.round(IR.actual_25)}% → ${Math.round(IR.actual_50)}%`, ctx: "In the 25% and 50% regimes, Canada route. Matches the statutory rates: full pass-through." },
+  { s: "Futures", label: "Tariff rate implied by the forward curve", value: `${Math.round(IR.fwd_50)}%`, unit: "vs 50% statutory", ctx: "M03 at month-end, Jul–Dec 2025. The curve priced relief." },
+  { s: "Futures", label: "M03 forecast miss under 50%", value: `${sgn(FS.t50.mean_err)}`, unit: "$/t", ctx: `Too low in all ${FS.t50.n} of ${FS.t50.n} forecasts (t = ${FS.t50.t_nw.toFixed(1)}). Pre-tariff: ${sgn(FS.pre.mean_err)} $/t over ${FS.pre.n}.` },
+  { s: "Risk", label: "LME hedge ratio, US-delivered metal", value: `${HR.t50_all.ratio.toFixed(2)}`, unit: `vs ${HR.pre.ratio.toFixed(2)} before`, ctx: "Minimum-variance, monthly, HAC. Theory at 50%: 1.5." },
+  { s: "Flows", label: "US crude imports from Canada", value: pct(OC.Canada.pct), ctx: `${n0(OC.Canada.base)} → ${n0(OC.Canada.t50)} kt/month. Canada's share ${Math.round(D.canada_share.base)}% → ${Math.round(D.canada_share.t50)}%.` },
+  { s: "Flows", label: "US share of Canada's unwrought exports", value: `${Math.round(CX.us_share_base)}% → ${Math.round(CX.us_share_t50)}%`, ctx: `Exports to the Netherlands rose from ~${Math.round(CX.nl_base)} to ~${Math.round(CX.nl_t50)} kt/month.` },
+];
+document.getElementById("kpis").innerHTML = KPIS.map(k => `
+  <div class="kpi"><span class="strand">${k.s}</span><span class="label">${k.label}</span>
+  <span class="value">${k.value}${k.unit ? ` <small>${k.unit}</small>` : ""}</span><span class="ctx">${k.ctx}</span></div>`).join("");
+
+document.getElementById("t-price").innerHTML =
+  `The premium rose from <b>~850 $/t at 25% to ~2,100 $/t</b> by early 2026 and tracked parity through both steps. Before 2025 it sat 80–180 $/t above parity at a 0% tariff, about the size of the freight band.`;
+document.getElementById("t-implied").innerHTML =
+  `Backing the rate out of parity gives <b>${Math.round(IR.actual_25)}% and ${Math.round(IR.actual_50)}%</b> in the two regimes. The forward premium implied <b>${Math.round(IR.fwd_50)}%</b> in Jul–Dec 2025.`;
+document.getElementById("t-err").innerHTML =
+  `Before the tariff the curve was unbiased: <b>${sgn(FS.pre.mean_err)} $/t</b> over ${FS.pre.n} forecasts. Under 50% before Hormuz it came in below the outcome <b>in all ${FS.t50.n}</b>, by ${n0(FS.t50.mean_err)} $/t on average (Newey–West t = ${FS.t50.t_nw.toFixed(1)}). Since Hormuz: ${sgn(FS.hormuz.mean_err)} $/t over ${FS.hormuz.n}.`;
+const R = D.forecast.rule;
+document.getElementById("t-rule").innerHTML =
+  `${R.signal.wins} of ${R.signal.n} trades profitable. In-sample, before costs and from a single regime: a hypothesis to re-test on CME data.`;
+document.getElementById("t-hedge").innerHTML =
+  `Estimated at <b>${HR.t50_all.ratio.toFixed(2)}</b> under 50% (s.e. ${HR.t50_all.se.toFixed(2)}) against ${HR.pre.ratio.toFixed(2)} before the tariff: above 1, below theory. The ratio also rose in the 2021 premium rally, so a tight market alone pushes it up.`;
+document.getElementById("t-ochg").innerHTML =
+  `Total crude imports fell <b>${Math.round(-OC["Total crude"].pct)}%</b>. India (${pct(OC.India.pct)}) and the UAE (${pct(OC["United Arab Emirates"].pct)}) partly filled the gap.`;
+document.getElementById("t-cax").innerHTML =
+  `The US share fell from <b>${Math.round(CX.us_share_base)}% to ${Math.round(CX.us_share_t50)}%</b>. Exports to the Netherlands rose from ~${Math.round(CX.nl_base)} to ~${Math.round(CX.nl_t50)} kt/month.`;
+document.getElementById("t-prod").innerHTML =
+  `By Q2 2026 scrap was <b>${pct(PC.Scrap.pct)}</b> and semis <b>${pct(PC.Semis.pct)}</b> against baseline. Crude's share of imports fell from ${Math.round(PC.crude_share.base)}% to ${Math.round(PC.crude_share.q2_26)}%, and total imports (${n0(PC.total.q2_26)} kt/month) were back at the pre-tariff level (${n0(PC.total.base)}).`;
+document.getElementById("src").innerHTML =
+  `Sources: LME (westmetall.com), USGS Mineral Industry Surveys, UN Comtrade (StatCan), LME Platts/Fastmarkets premium contracts. Freight (Canada → Rotterdam, Canada → Midwest) 30/50/80 $/t low/mid/high. Full method and caveats in README.md and notebook.ipynb. Built by scripts/build_dashboard.py.`;
+
+/* ---------- chart plumbing ---------- */
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function alpha(hex, a) {
+  const h = hex.replace("#", ""); const n = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16);
+  return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+}
+function monthX(labels, scale, dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const i = labels.indexOf(`${y}-${String(m).padStart(2, "0")}`);
+  if (i < 0) return null;
+  const step = labels.length > 1 ? scale.getPixelForValue(1) - scale.getPixelForValue(0) : 0;
+  return scale.getPixelForValue(i) + ((d - 1) / new Date(y, m, 0).getDate() - 0.5) * step;
+}
+
+// Vertical event lines and horizontal reference lines, drawn under the data
+const refLines = {
+  id: "refLines",
+  beforeDatasetsDraw(chart, _a, o) {
+    const { ctx, chartArea: A, scales } = chart; const c = tok("--muted");
+    ctx.save(); ctx.lineWidth = 1; ctx.font = `500 10.5px ${tok("--f-data")}`; ctx.fillStyle = c;
+    (o.h || []).forEach(h => {
+      const y = scales.y.getPixelForValue(h.y); if (y < A.top || y > A.bottom) return;
+      ctx.strokeStyle = h.strong ? tok("--ink-2") : c; ctx.setLineDash(h.dash ? [4, 3] : []);
+      ctx.beginPath(); ctx.moveTo(A.left, y); ctx.lineTo(A.right, y); ctx.stroke();
+    });
+    ctx.setLineDash([3, 3]); ctx.strokeStyle = alpha(c.startsWith("#") ? c : "#80868e", .9);
+    (o.v || []).forEach(e => {
+      const x = monthX(chart.data.labels, scales.x, e.date); if (x == null || x < A.left || x > A.right) return;
+      ctx.beginPath(); ctx.moveTo(x, A.top); ctx.lineTo(x, A.bottom); ctx.stroke();
+    });
+    ctx.restore();
+  },
+  afterDatasetsDraw(chart, _a, o) {
+    const { ctx, chartArea: A, scales } = chart;
+    ctx.save(); ctx.font = `500 10.5px ${tok("--f-data")}`; ctx.fillStyle = tok("--muted");
+    ctx.lineJoin = "round"; ctx.lineWidth = 4; ctx.strokeStyle = tok("--surface");
+    const put = (t, x, y) => { ctx.strokeText(t, x, y); ctx.fillText(t, x, y); };
+    (o.h || []).forEach(h => {
+      if (!h.label) return; const y = scales.y.getPixelForValue(h.y); if (y < A.top || y > A.bottom) return;
+      ctx.textAlign = "left"; ctx.textBaseline = "bottom"; put(h.label, A.left + 4, y - 3);
+    });
+    (o.v || []).forEach(e => {
+      const x = monthX(chart.data.labels, scales.x, e.date); if (x == null || x < A.left || x > A.right) return;
+      const right = x > A.right - 60;
+      ctx.textAlign = right ? "right" : "left"; ctx.textBaseline = "top";
+      put(e.label, x + (right ? -4 : 4), A.top + 2 + (e.row || 0) * 13);
+    });
+    ctx.restore();
+  }
+};
+// Values at bar tips (selective labels on short bar charts)
+const tipLabels = {
+  id: "tipLabels",
+  afterDatasetsDraw(chart, _a, o) {
+    if (!o.fmt) return;
+    const { ctx } = chart; const horiz = chart.options.indexAxis === "y";
+    ctx.save(); ctx.font = `500 11px ${tok("--f-data")}`; ctx.fillStyle = tok("--ink-2");
+    chart.data.datasets.forEach((ds, di) => {
+      const meta = chart.getDatasetMeta(di); if (meta.hidden) return;
+      meta.data.forEach((el, i) => {
+        const v = ds.data[i]; if (v == null) return; const t = o.fmt(v, i, di);
+        if (horiz) { ctx.textAlign = v < 0 ? "right" : "left"; ctx.textBaseline = "middle"; ctx.fillText(t, el.x + (v < 0 ? -6 : 6), el.y); }
+        else { ctx.textAlign = "center"; ctx.textBaseline = v < 0 ? "top" : "bottom"; ctx.fillText(t, el.x, el.y + (v < 0 ? 5 : -5)); }
+      });
+    });
+    ctx.restore();
+  }
+};
+// Confidence-interval whiskers for scatter datasets carrying `ci`
+const whiskers = {
+  id: "whiskers",
+  beforeDatasetsDraw(chart) {
+    const { ctx, scales } = chart;
+    chart.data.datasets.forEach((ds, di) => {
+      if (!ds.ci) return; const meta = chart.getDatasetMeta(di); if (meta.hidden) return;
+      ctx.save(); ctx.strokeStyle = ds.borderColor; ctx.lineWidth = 2; ctx.lineCap = "round";
+      meta.data.forEach((pt, i) => {
+        const [lo, hi] = ds.ci[i]; const y1 = scales.y.getPixelForValue(lo), y2 = scales.y.getPixelForValue(hi);
+        ctx.beginPath(); ctx.moveTo(pt.x, y1); ctx.lineTo(pt.x, y2);
+        ctx.moveTo(pt.x - 4, y1); ctx.lineTo(pt.x + 4, y1); ctx.moveTo(pt.x - 4, y2); ctx.lineTo(pt.x + 4, y2); ctx.stroke();
+      });
+      ctx.restore();
+    });
+  }
+};
+Chart.register(refLines, tipLabels, whiskers);
+
+const charts = {};
+const TABLES = {};
+
+function baseOpts(o = {}) {
+  const ink2 = tok("--ink-2"), muted = tok("--muted"), grid = tok("--grid");
+  return {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    interaction: { mode: "index", intersect: false },
+    layout: { padding: { top: 4, right: 6 } },
+    plugins: {
+      legend: { position: "top", align: "start", labels: { color: ink2, boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: "rectRounded", padding: 14, font: { size: 12 },
+        filter: it => !it.text.startsWith("_") } },
+      tooltip: { backgroundColor: tok("--surface"), titleColor: tok("--ink"), bodyColor: ink2, borderColor: tok("--rule"), borderWidth: 1,
+        padding: 10, boxPadding: 4, usePointStyle: true, titleFont: { weight: "600" }, bodyFont: { family: tok("--f-data"), size: 11.5 },
+        filter: it => !it.dataset.label.startsWith("_"),
+        callbacks: { title: items => items.length && /^\d{4}-\d{2}$/.test(items[0].label) ? fmtM(items[0].label) : items[0]?.label } },
+      refLines: {}, tipLabels: {},
+    },
+    scales: {
+      x: { grid: { display: false }, border: { color: tok("--rule") }, ticks: { color: muted, maxRotation: 0, autoSkipPadding: 14, font: { size: 11 },
+        callback(v) { const l = this.getLabelForValue(v); return /^\d{4}-\d{2}$/.test(l) ? fmtM(l) : l; } } },
+      y: { grid: { color: grid }, border: { display: false }, ticks: { color: muted, font: { size: 11 }, callback: v => n0(v) } },
+    },
+    ...o,
+  };
+}
+function merge(a, b) {
+  for (const k in b) { if (b[k] && typeof b[k] === "object" && !Array.isArray(b[k]) && a[k] && typeof a[k] === "object") merge(a[k], b[k]); else a[k] = b[k]; }
+  return a;
+}
+const line = (label, data, color, extra = {}) => ({ type: "line", label, data, borderColor: color, backgroundColor: color, borderWidth: 2,
+  pointRadius: 0, pointHoverRadius: 4, pointHoverBorderWidth: 2, pointHoverBorderColor: tok("--surface"), tension: 0, spanGaps: true, ...extra });
+function make(id, cfg, table) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), cfg);
+  TABLES[id] = table || (() => {
+    const ds = cfg.data.datasets.filter(d => !d.label.startsWith("_"));
+    return { head: ["", ...ds.map(d => d.label)], rows: cfg.data.labels.map((l, i) => [/^\d{4}-\d{2}$/.test(l) ? fmtM(l) : l, ...ds.map(d => d.data[i])]) };
+  });
+}
+
+const EV_TARIFF = [{ date: "2025-03-12", label: "25%" }, { date: "2025-06-04", label: "50%" }, { date: "2026-03-02", label: "Hormuz" }];
+
+function build() {
+  Chart.defaults.font.family = tok("--f-body");
+  Chart.defaults.color = tok("--ink-2");
+  const C = { blue: tok("--s-blue"), orange: tok("--s-orange"), aqua: tok("--s-aqua"), yellow: tok("--s-yellow"), magenta: tok("--s-magenta"),
+    green: tok("--s-green"), violet: tok("--s-violet"), red: tok("--s-red"), neutral: tok("--s-neutral"), faint: tok("--s-faint"),
+    ink: tok("--ink"), ink2: tok("--ink-2"), surface: tok("--surface") };
+
+  /* 1a. premium vs parity */
+  const P = D.price;
+  make("c-price", { data: { labels: P.months, datasets: [
+    line("Freight band (parity)", P.parity_hi, alpha(C.orange, .28), { borderWidth: 0, fill: "+1", backgroundColor: alpha(C.orange, .28), pointHoverRadius: 0 }),
+    line("_low", P.parity_lo, "transparent", { borderWidth: 0, pointHoverRadius: 0 }),
+    line("Canada import parity premium", P.parity, C.orange),
+    line("Midwest premium (actual)", P.mwp, C.blue),
+  ] }, options: merge(baseOpts(), { plugins: { refLines: { v: EV_TARIFF } }, scales: { y: { title: { display: true, text: "$/t", color: C.ink2 } } } }) },
+  () => ({ head: ["Month", "MW premium", "Parity (mid)", "Parity low", "Parity high"], rows: P.months.map((m, i) => [fmtM(m), P.mwp[i], P.parity[i], P.parity_lo[i], P.parity_hi[i]]) }));
+
+  /* 1b. implied tariff rate */
+  const I = D.implied;
+  make("c-implied", { data: { labels: I.months, datasets: [
+    line("Statutory rate (Canada)", I.statutory, C.ink2, { borderWidth: 1.5, borderDash: [5, 4], stepped: "middle" }),
+    line("Implied by actual premium", I.actual, C.blue),
+    line("Implied by forward premium (M03)", I.forward, C.aqua),
+  ] }, options: merge(baseOpts(), { plugins: { refLines: { v: EV_TARIFF.slice(0, 2) }, tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${n1(c.raw)}%` } } },
+    scales: { y: { ticks: { callback: v => v + "%" } } } }) });
+
+  /* 1c. curve slope */
+  const S = D.slope;
+  make("c-slope", { type: "bar", data: { labels: S.months, datasets: [
+    { label: "M03 − M01", data: S.slope, backgroundColor: S.slope.map(v => v >= 0 ? C.blue : C.red), borderRadius: 3, borderSkipped: "start", maxBarThickness: 24 },
+  ] }, options: merge(baseOpts(), { plugins: { legend: { display: false },
+      refLines: { h: [{ y: 0, strong: true }], v: [{ date: "2025-02-10", label: "25% ann." }, { date: "2025-05-30", label: "50% ann." }, { date: "2026-03-02", label: "Hormuz" }, { date: "2026-08-22", label: "Aug" }] },
+      tooltip: { callbacks: { label: c => ` M03 − M01: ${sgn(c.raw)} $/t ${c.raw < 0 ? "(backwardation)" : "(contango)"}` } } } }) });
+
+  /* 2a. forecast vs realised */
+  const F = D.forecast;
+  make("c-fcst", { data: { labels: F.months, datasets: [
+    line("Realised premium", F.realised, C.blue),
+    line("M03 futures, two months earlier", F.m03, C.aqua),
+    line("Canada parity at the rate in force", F.parity, C.orange),
+  ] }, options: merge(baseOpts(), { plugins: { refLines: { v: [{ date: "2025-02-10", label: "25% ann." }, { date: "2025-05-30", label: "50% ann." }, { date: "2026-03-02", label: "Hormuz" }] } } }) });
+
+  /* 2b. forecast errors by regime */
+  const WC = { pre: C.neutral, t50: C.blue, hormuz: C.yellow, spans: C.faint };
+  const WL = { pre: "Pre-tariff", t50: "50%, before Hormuz", hormuz: "50% + Hormuz", spans: "Spans a tariff step (excluded)" };
+  make("c-err", { type: "bar", data: { labels: F.months, datasets: [
+    { label: "Realised − M03", data: F.err, backgroundColor: F.window.map(w => WC[w]), borderRadius: 3, borderSkipped: "start", maxBarThickness: 24 },
+  ] }, options: merge(baseOpts(), { plugins: {
+      legend: { labels: { generateLabels: () => Object.keys(WL).map(k => ({ text: WL[k], fillStyle: WC[k], strokeStyle: WC[k], lineWidth: 0, pointStyle: "rectRounded", fontColor: C.ink2 })) }, onClick: null },
+      refLines: { h: [{ y: 0, strong: true }] },
+      tooltip: { callbacks: { label: c => [` Error: ${sgn(c.raw)} $/t`, ` ${WL[F.window[c.dataIndex]]}`, F.fresh[c.dataIndex] ? " M03 quote fresh" : " M03 quote stale (unchanged 5 days)"] } } } }) },
+  () => ({ head: ["Target month", "Realised", "M03", "Error", "Regime", "M03 quote"], rows: F.months.map((m, i) => [fmtM(m), F.realised[i], F.m03[i], F.err[i], WL[F.window[i]], F.fresh[i] ? "fresh" : "stale"]) }));
+
+  /* 2c. RMSE */
+  const regs = ["pre", "t50", "hormuz"];
+  make("c-rmse", { type: "bar", data: { labels: regs.map(r => [WL[r], `${FS[r].n} forecasts`]), datasets: [
+    { label: "M03 futures", data: regs.map(r => FS[r].rmse_fut), backgroundColor: C.aqua },
+    { label: "No change", data: regs.map(r => FS[r].rmse_nochange), backgroundColor: C.neutral },
+    { label: "Canada parity", data: regs.map(r => FS[r].rmse_parity), backgroundColor: C.orange },
+  ].map(d => ({ ...d, borderRadius: 3, borderSkipped: "start", maxBarThickness: 18, borderColor: C.surface, borderWidth: { left: 1, right: 1 } })) },
+  options: merge(baseOpts(), { plugins: { tipLabels: { fmt: v => n0(v) }, tooltip: { callbacks: { title: it => it[0].label.split(",")[0], label: c => ` ${c.dataset.label}: ${n0(c.raw)} $/t` } } },
+    scales: { y: { grace: "12%" }, x: { ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
+  () => ({ head: ["Regime", "Forecasts", "M03", "No change", "Canada parity", "Mean error M03"], rows: regs.map(r => [WL[r], FS[r].n, n0(FS[r].rmse_fut), n0(FS[r].rmse_nochange), n0(FS[r].rmse_parity), sgn(FS[r].mean_err)]) }));
+
+  /* 2d. trading rule */
+  make("c-rule", { type: "bar", data: { labels: [["Buy when M03", "< Canada parity"], ["Always long", "M03"]], datasets: [
+    { label: "Mean P&L per trade", data: [R.signal.pnl, R.always.pnl], backgroundColor: [C.aqua, C.neutral], borderRadius: 3, borderSkipped: "start", maxBarThickness: 40 },
+  ] }, options: merge(baseOpts(), { plugins: { legend: { display: false }, tipLabels: { fmt: v => sgn(v) + " $/t" },
+      tooltip: { callbacks: { title: it => it[0].label.replace(",", " "), label: c => [` ${sgn(c.raw)} $/t per trade`, c.dataIndex === 0 ? ` ${R.signal.wins} of ${R.signal.n} profitable` : ` ${R.always.wins} of ${R.always.n} profitable`] } } },
+    scales: { y: { min: 0, grace: "15%" }, x: { ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
+  () => ({ head: ["Strategy", "Trades", "Profitable", "Mean P&L $/t"], rows: [["Buy M03 below Canada parity", R.signal.n, R.signal.wins, n0(R.signal.pnl)], ["Always long M03", R.always.n, R.always.wins, n0(R.always.pnl)]] }));
+
+  /* 2e. August 2026 */
+  const A = D.aug26;
+  make("c-aug", { type: "bar", data: { labels: [["Canada parity", "50% → 25% (model)"], ["CME deferred", "contracts (reported)"]], datasets: [
+    { label: "Change", data: [-A.parity_drop, -A.cme_drop], backgroundColor: [C.orange, C.aqua], borderRadius: 3, borderSkipped: "start", maxBarThickness: 40 },
+  ] }, options: merge(baseOpts(), { plugins: { legend: { display: false }, tipLabels: { fmt: v => sgn(v) + " $/t" },
+      tooltip: { callbacks: { title: it => it[0].label.replace(",", " "), label: c => c.dataIndex === 0 ? [` ${sgn(c.raw)} $/t`, ` Parity ${n0(A.parity50)} → ${n0(A.parity25)} $/t at Aug 26 levels`] : [` ≈ ${sgn(c.raw)} $/t`, " Oct/Nov contracts −12%, press reports"] } } },
+    scales: { y: { max: 0, grace: "15%" }, x: { position: "top", ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
+  () => ({ head: ["", "$/t"], rows: [["Canada parity at 50%, Aug 26", n0(A.parity50)], ["Canada parity at 25%, Aug 26", n0(A.parity25)], ["Modelled drop", n0(-A.parity_drop)], ["CME deferred contracts (reported)", "≈ −270"]] }));
+
+  /* 3a. rolling hedge ratio */
+  const H = D.hedge_roll;
+  make("c-hedge", { data: { labels: H.months, datasets: [
+    line("Theory at Canada parity: 1 + t", H.theory, C.ink2, { borderWidth: 1.5, borderDash: [5, 4], stepped: "middle" }),
+    line("Estimated hedge ratio, rolling 12 months", H.ratio, C.blue),
+  ] }, options: merge(baseOpts(), { plugins: { refLines: { h: [{ y: 1, label: "1:1 hedge" }], v: EV_TARIFF },
+      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw?.toFixed(2)}` } } },
+    scales: { y: { min: 0.6, max: 2.0, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } } } }) });
+
+  /* 3b. residual risk */
+  const rk = ["pre", "t50_pre_hormuz", "hormuz", "t50_all"], rl = { pre: ["Pre-tariff"], t50_pre_hormuz: ["50%, before", "Hormuz"], hormuz: ["50% +", "Hormuz"], t50_all: ["50%, all"] };
+  make("c-resid", { type: "bar", data: { labels: rk.map(k => rl[k]), datasets: [
+    { label: "1:1 LME hedge", data: rk.map(k => HR[k].resid_1to1), backgroundColor: C.neutral },
+    { label: "Minimum-variance hedge", data: rk.map(k => HR[k].resid_opt), backgroundColor: C.blue },
+  ].map(d => ({ ...d, borderRadius: 3, borderSkipped: "start", maxBarThickness: 18, borderColor: C.surface, borderWidth: { left: 1, right: 1 } })) },
+  options: merge(baseOpts(), { plugins: { tipLabels: { fmt: v => n0(v) }, tooltip: { callbacks: { title: it => it[0].label.replace(",", " "), label: c => ` ${c.dataset.label}: ${n0(c.raw)} $/t` } } },
+    scales: { y: { grace: "12%" }, x: { ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
+  () => ({ head: ["Regime", "Months", "Hedge ratio", "s.e.", "Residual, 1:1", "Residual, optimal"], rows: rk.map(k => [rl[k].join(" "), HR[k].months, HR[k].ratio.toFixed(2), HR[k].se.toFixed(2), n0(HR[k].resid_1to1), n0(HR[k].resid_opt)]) }));
+
+  /* 3c. weekly betas */
+  const B = D.betas, BR = [["pre", "Pre-tariff", C.neutral, -0.18], ["t50", "50%, before Hormuz", C.blue, 0], ["hormuz", "50% + Hormuz", C.yellow, 0.18]];
+  const HZ = [1, 2, 4, 8];
+  make("c-beta", { type: "scatter", data: { datasets: BR.map(([k, lab, col, off]) => ({
+    label: lab, data: B[k].map((b, i) => ({ x: i + 1 + off, y: b.beta })), ci: B[k].map(b => [b.beta - 1.96 * b.se, b.beta + 1.96 * b.se]),
+    borderColor: col, backgroundColor: col, pointRadius: 5, pointHoverRadius: 6, pointBorderColor: C.surface, pointBorderWidth: 2 })) },
+  options: merge(baseOpts({ interaction: { mode: "nearest", intersect: false, axis: "x" } }), {
+    plugins: { refLines: { h: [{ y: 0, strong: true }, { y: 0.5, dash: true, label: "theory at 50%: β = t = 0.5" }] },
+      tooltip: { callbacks: { title: it => `${HZ[Math.round(it[0].raw.x) - 1]}-week change`, label: c => { const b = B[BR[c.datasetIndex][0]][c.dataIndex]; return ` ${c.dataset.label}: β ${b.beta.toFixed(2)} (95% CI ${(b.beta - 1.96 * b.se).toFixed(2)} to ${(b.beta + 1.96 * b.se).toFixed(2)})`; } } } },
+    scales: { x: { type: "linear", min: 0.5, max: 4.5, ticks: { stepSize: 1, callback: v => Number.isInteger(v) && v >= 1 && v <= 4 ? `${HZ[v - 1]} wk` : "" } },
+      y: { min: -0.6, max: 1.4, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } } } }) },
+  () => ({ head: ["Regime", "Horizon", "β", "s.e."], rows: BR.flatMap(([k, lab]) => B[k].map(b => [lab, `${b.h} wk`, b.beta.toFixed(2), b.se.toFixed(2)])) }));
+
+  /* 4a. US crude imports by origin */
+  const O = D.flows_origin, OCOL = { "Canada": C.blue, "United Arab Emirates": C.orange, "Argentina": C.aqua, "India": C.yellow, "Bahrain": C.magenta, "Rest": C.neutral };
+  const oNames = Object.keys(O.series);
+  const stack = (names, series, cols) => names.map((n, i) => ({ label: n === "United Arab Emirates" ? "UAE" : n, data: series[n], backgroundColor: cols[n],
+    borderColor: C.surface, borderWidth: { top: 2, bottom: 0, left: 0, right: 0 }, borderSkipped: false,
+    borderRadius: i === names.length - 1 ? { topLeft: 3, topRight: 3 } : 0, maxBarThickness: 24, stack: "s" }));
+  make("c-origin", { type: "bar", data: { labels: O.months, datasets: stack(oNames, O.series, OCOL) },
+    options: merge(baseOpts(), { plugins: { refLines: { v: EV_TARIFF.slice(0, 2).concat([{ date: "2026-03-02", label: "Hormuz" }]) },
+      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${n1(c.raw)} kt`, footer: it => `Total: ${n1(it.reduce((s, x) => s + (x.raw || 0), 0))} kt` } } },
+      scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: "kt / month", color: C.ink2 } } } }) });
+
+  /* 4b. change by origin */
+  const oc = [...oNames, "Total crude"];
+  make("c-ochg", { type: "bar", data: { labels: oc.map(n => n === "United Arab Emirates" ? "UAE" : n), datasets: [
+    { label: "% change", data: oc.map(n => OC[n].pct), backgroundColor: oc.map(n => OCOL[n] || C.ink2), borderRadius: 3, borderSkipped: "start", maxBarThickness: 18 },
+  ] }, options: merge(baseOpts({ indexAxis: "y", interaction: { mode: "nearest", intersect: true, axis: "y" } }), {
+    plugins: { legend: { display: false }, tipLabels: { fmt: v => pct(v) }, refLines: {},
+      tooltip: { callbacks: { label: c => [` ${pct(c.raw)}`, ` ${n1(OC[oc[c.dataIndex]].base)} → ${n1(OC[oc[c.dataIndex]].t50)} kt/month`] } } },
+    scales: { x: { min: -60, max: 100, grid: { display: true, color: tok("--grid") }, ticks: { stepSize: 20, callback: v => v + "%" } }, y: { grid: { display: false }, ticks: { color: C.ink2, callback(v) { return this.getLabelForValue(v); } } } } }) },
+  () => ({ head: ["Origin", "Baseline kt/mo", "50% kt/mo", "Change"], rows: oc.map(n => [n, n1(OC[n].base), n1(OC[n].t50), pct(OC[n].pct)]) }));
+
+  /* 4c. Canadian exports */
+  const X = D.canada_exports, XCOL = { USA: C.violet, Netherlands: C.green, Other: C.neutral };
+  make("c-cax", { type: "bar", data: { labels: X.months, datasets: stack(Object.keys(X.series), X.series, XCOL) },
+    options: merge(baseOpts(), { plugins: { refLines: { v: EV_TARIFF.slice(0, 2) },
+      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${n1(c.raw)} kt`, footer: it => { const t = it.reduce((s, x) => s + (x.raw || 0), 0); return `Total: ${n1(t)} kt · US share ${Math.round(it[0].raw / t * 100)}%`; } } } },
+      scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: "kt / month", color: C.ink2 } } } }) });
+
+  /* 4d. by product */
+  const PQ = D.products, PCOL = { Crude: C.blue, Semis: C.orange, Scrap: C.aqua };
+  make("c-prod", { type: "bar", data: { labels: PQ.quarters, datasets: stack(Object.keys(PQ.series), PQ.series, PCOL).map(d => ({ ...d, maxBarThickness: 44 })) },
+    options: merge(baseOpts(), { plugins: { refLines: { h: [{ y: PC.total.base, dash: true, label: `pre-tariff total, ${n0(PC.total.base)} kt` }] },
+      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${n1(c.raw)} kt`, footer: it => { const t = it.reduce((s, x) => s + (x.raw || 0), 0); return `Total: ${n1(t)} kt · crude ${Math.round(it[0].raw / t * 100)}%`; } } } },
+      scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: "kt / month", color: C.ink2 } } } }) });
+
+  document.querySelectorAll("details.data[open]").forEach(renderTable);
+}
+
+function renderTable(det) {
+  const t = TABLES[det.dataset.chart]?.(); if (!t) return;
+  const cell = v => typeof v === "number" ? (Math.abs(v) < 10 && !Number.isInteger(v) ? v.toFixed(2) : n0(v)) : (v ?? "–");
+  det.querySelector(".tbl").innerHTML = `<table><thead><tr>${t.head.map(h => `<th scope="col">${h}</th>`).join("")}</tr></thead><tbody>${
+    t.rows.map(r => `<tr>${r.map((v, i) => i === 0 ? `<th scope="row" style="font-weight:400">${cell(v)}</th>` : `<td>${cell(v)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+}
+document.querySelectorAll("details.data").forEach(d => d.addEventListener("toggle", () => d.open && renderTable(d)));
+
+function start() { try { build(); } catch (e) { console.error(e); } }
+(document.fonts?.ready || Promise.resolve()).then(start);
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", start);
+new MutationObserver(start).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
