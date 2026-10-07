@@ -2,8 +2,10 @@
 dashboard/template.html as JSON. Calculations follow notebook.ipynb (same freight, tariff steps and windows).
 
 Run from the repo root:  python scripts/build_dashboard.py
+Output is a standalone page (GitHub Pages: <user>.github.io/al-mwp/dashboard/).
 """
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -296,6 +298,16 @@ if __name__ == "__main__":
     print(json.dumps(summary, indent=1, default=float))
     tpl = ROOT / "dashboard" / "template.html"
     if tpl.exists():
-        html = tpl.read_text(encoding="utf-8").replace("__DATA__", json.dumps(out, separators=(",", ":")))
-        (ROOT / "dashboard" / "index.html").write_text(html, encoding="utf-8")
+        page = tpl.read_text(encoding="utf-8").replace("__DATA__", json.dumps(out, separators=(",", ":")))
+        # The template is a fragment (head tags, then the body from <div class="wrap">). Wrap it in a full document
+        # for GitHub Pages; `--fragment PATH` also writes the bare fragment, which is what the claude.ai artifact takes.
+        head, body = page.split('<div class="wrap">', 1)
+        doc = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+               '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+               f'{head.strip()}\n</head>\n<body>\n<div class="wrap">{body}</body>\n</html>\n')
+        (ROOT / "dashboard" / "index.html").write_text(doc, encoding="utf-8")
         print("wrote dashboard/index.html")
+        if "--fragment" in sys.argv:
+            frag = Path(sys.argv[sys.argv.index("--fragment") + 1])
+            frag.write_text(page, encoding="utf-8")
+            print(f"wrote {frag}")

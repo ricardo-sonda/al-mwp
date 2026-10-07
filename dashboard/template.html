@@ -56,6 +56,10 @@ header.top h1 { font-size: clamp(28px, 4.2vw, 44px); line-height: 1.08; font-wei
 .answer { font-size: 18px; line-height: 1.5; color: var(--ink-2); }
 .answer strong { color: var(--ink); font-weight: 600; }
 .meta { font: 12px/1.5 var(--f-data); color: var(--muted); }
+.repo { justify-self: start; display: inline-flex; gap: 8px; align-items: baseline; font: 500 13px/1.4 var(--f-data);
+  color: var(--accent); text-decoration: none; border: 1px solid var(--rule); border-radius: 4px; padding: 7px 12px; background: var(--surface); }
+.repo:hover { border-color: var(--accent); }
+.repo span { color: var(--muted); font-weight: 400; }
 
 /* Tariff timeline */
 .timeline { margin: 32px 0 0; padding: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
@@ -144,6 +148,7 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <p class="answer"><strong>The physical premium did, in full. The futures curve did not.</strong>
       Import parity explains the premium at the statutory 25% and 50% rates, while the forward curve kept pricing a relief that never came.
       The tariff also raised the LME hedge ratio of US-delivered metal above 1 and pushed Canadian metal toward Europe.</p>
+    <a class="repo" href="https://github.com/ricardo-sonda/al-mwp"><span>Full repo here:</span> github.com/ricardo-sonda/al-mwp →</a>
     <p class="meta" id="asof"></p>
   </header>
 
@@ -359,7 +364,7 @@ document.getElementById("t-cax").innerHTML =
 document.getElementById("t-prod").innerHTML =
   `By Q2 2026 scrap was <b>${pct(PC.Scrap.pct)}</b> and semis <b>${pct(PC.Semis.pct)}</b> against baseline. Crude's share of imports fell from ${Math.round(PC.crude_share.base)}% to ${Math.round(PC.crude_share.q2_26)}%, and total imports (${n0(PC.total.q2_26)} kt/month) were back at the pre-tariff level (${n0(PC.total.base)}).`;
 document.getElementById("src").innerHTML =
-  `Sources: LME (westmetall.com), USGS Mineral Industry Surveys, UN Comtrade (StatCan), LME Platts/Fastmarkets premium contracts. Freight (Canada → Rotterdam, Canada → Midwest) 30/50/80 $/t low/mid/high. Full method and caveats in README.md and notebook.ipynb. Built by scripts/build_dashboard.py.`;
+  `Sources: LME (westmetall.com), USGS Mineral Industry Surveys, UN Comtrade (StatCan), LME Platts/Fastmarkets premium contracts. Freight (Canada → Rotterdam, Canada → Midwest) 30/50/80 $/t low/mid/high. Full method and caveats in <a href="https://github.com/ricardo-sonda/al-mwp#readme">README.md</a> and <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/notebook.ipynb">notebook.ipynb</a>. Built by <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/scripts/build_dashboard.py">scripts/build_dashboard.py</a>.`;
 
 /* ---------- chart plumbing ---------- */
 const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
