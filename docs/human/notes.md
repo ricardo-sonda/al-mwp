@@ -62,3 +62,8 @@ Set the gap sign against the flows. The README promises this and it's the core o
 Check whether an implied ~8–10 $/t per point of tariff explains the sustained backwardation, or whether the curve is just stale (M02+ unchanged on 80% of days).
 Pin down the freight assumptions with a cited source. The baseline gap is the same size as the freight band.
 I'd do #1 and #2 first. #1 fixes a headline number, and #2 answers the question the memo will be judged on.
+
+
+project is mainly two things:
+Import export changes - global metal flows 
+Whether tariffs are priced in futures and optimal hedging
