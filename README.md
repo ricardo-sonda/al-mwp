@@ -2,6 +2,17 @@
 
 An independent research project in Python (pandas, statsmodels). It looks at how far the US Midwest aluminium premium priced in the 2025 Section 232 tariffs, whether the futures curve priced them correctly, what they did to LME hedging, and how they redirected North American metal flows. The full analysis is in `notebook.ipynb`.
 
+## The question
+
+> **To what extent has the US Midwest aluminium price absorbed the cost of the Section 232 tariffs, and what explains the part that has not been passed through?**
+
+The project has four strands:
+
+1. **Price: pass-through.** Compare the physical Midwest price (LME + MW premium) with the *landed cost* of importing a tonne. The landed cost is LME + origin premium + freight + tariff. The gap between the two is the import margin. A gap near zero means full pass-through. A persistent gap means the market is coping some other way: running down inventory, substituting domestic or scrap units, or expecting the tariff to be reversed.
+2. **Futures: expectations.** Did the MW premium futures curve forecast the premium correctly under the tariff, or did it price a relief that never came?
+3. **Risk: hedging.** How does an ad valorem tariff change the LME exposure of US-delivered metal and of an MW premium position?
+4. **Volume: flows.** How did US imports by origin and product change around each tariff step, and where did the Canadian tonnes that stopped going to the US go?
+
 ## Summary
 
 **Data and pipeline**
@@ -31,17 +42,6 @@ An independent research project in Python (pandas, statsmodels). It looks at how
 - US crude aluminium imports fell 25% against the pre-tariff baseline. Imports from Canada fell 38% (224 → 140 kt/month), and Canada's share fell from 75% to 62%. India (+77%) and the UAE (+27%) partly filled the gap.
 - Canadian metal was redirected to Europe. The US share of Canadian unwrought exports fell from 94% to 71%, and exports to the Netherlands rose from ~4 to ~43 kt/month.
 - Imports shifted from primary metal to semis and scrap. By Q2 2026, scrap imports were up 83% (Canadian scrap doubled) and semis up 51% (Europe, Korea, China). Crude's share of US imports fell from 65% to 45%, and total aluminium imports were back at the pre-tariff level.
-
-## The question
-
-> **To what extent has the US Midwest aluminium price absorbed the cost of the Section 232 tariffs, and what explains the part that has not been passed through?**
-
-The project has four strands:
-
-1. **Price: pass-through.** Compare the physical Midwest price (LME + MW premium) with the *landed cost* of importing a tonne. The landed cost is LME + origin premium + freight + tariff. The gap between the two is the import margin. A gap near zero means full pass-through. A persistent gap means the market is coping some other way: running down inventory, substituting domestic or scrap units, or expecting the tariff to be reversed.
-2. **Futures: expectations.** Did the MW premium futures curve forecast the premium correctly under the tariff, or did it price a relief that never came?
-3. **Risk: hedging.** How does an ad valorem tariff change the LME exposure of US-delivered metal and of an MW premium position?
-4. **Volume: flows.** How did US imports by origin and product change around each tariff step, and where did the Canadian tonnes that stopped going to the US go?
 
 ## The tariff timeline
 
