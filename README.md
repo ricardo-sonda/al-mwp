@@ -1,5 +1,7 @@
 # Has the US Midwest premium priced in the Section 232 tariffs?
 
+**[View the dashboard →](https://ricardo-sonda.github.io/al-mwp/dashboard/)** The main findings in charts. Rebuild it with `python scripts/build_dashboard.py`.
+
 An independent research project in Python (pandas, statsmodels). It looks at how far the US Midwest aluminium premium priced in the 2025 Section 232 tariffs, whether the futures curve priced them correctly, what they did to LME hedging, and how they redirected North American metal flows. The full analysis is in `notebook.ipynb`.
 
 ## The question
@@ -129,3 +131,4 @@ Freight is an assumption with a sensitivity band, because no free series exists.
 - `scripts/clean_duty_unpaid.py`: Rotterdam DUP (investing.com export)
 - `scripts/reconstruct_duty_unpaid.py`: extends DUP past Oct 2025 from DP (run after the two cleaning scripts)
 - `scripts/fetch_canada_exports.py`: Canadian exports by destination from the UN Comtrade public API (no key needed; one month per call, cached in `data/raw/comtrade`)
+- `scripts/build_dashboard.py`: recomputes the headline results from `data/` and writes `dashboard/index.html` from `dashboard/template.html`
