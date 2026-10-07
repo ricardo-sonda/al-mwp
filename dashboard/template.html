@@ -540,7 +540,7 @@ function build() {
 
   /* 2b. forecast errors by regime */
   const WC = { pre: C.neutral, t50: C.blue, hormuz: C.yellow, spans: C.faint };
-  const WL = { pre: "Pre-tariff", t50: "50%, before Hormuz", hormuz: "50% + Hormuz", spans: "Spans a tariff step (excluded)" };
+  const WL = { pre: "Pre-tariff", t50: "50%, before Hormuz", hormuz: "50% + Hormuz", spans: "Spans a tariff step or Hormuz (excluded)" };
   make("c-err", { type: "bar", data: { labels: F.months, datasets: [
     { label: "Realised − M03", data: F.err, backgroundColor: F.window.map(w => WC[w]), borderRadius: 3, borderSkipped: "start", maxBarThickness: 24 },
   ] }, options: merge(baseOpts(), { plugins: {
