@@ -67,3 +67,6 @@ I'd do #1 and #2 first. #1 fixes a headline number, and #2 answers the question 
 project is mainly two things:
 Import export changes - global metal flows 
 Whether tariffs are priced in futures and optimal hedging
+
+Insight onto tariff change:
+Previously shocks to LME are independent of shocks to MWP. However, becuase of tariffs, MWP has delta with LME equal to tariff rate. Thus, shocks to LME are now correlated to shocks to MWP, and MWP has gained direct exposure to LME. 
