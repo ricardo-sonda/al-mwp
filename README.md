@@ -32,8 +32,7 @@ The project has four strands:
 **Futures: did the curve misprice the tariff?**
 - Found that the MW curve stayed backwardated through most of the 50% regime (M03 − M01 between −120 and −230 \$/t). Backing out the tariff rate the forward premium implied gives ~46% against the statutory 50%: the market was pricing relief.
 - Tested the 3-month futures as a forecast against no-change and import-parity benchmarks (Newey–West errors). Before the tariff it was unbiased (+13 \$/t over 69 forecasts). Under the 50% tariff it came in below the outcome in all 7 forecasts, by 342 \$/t on average (t = 7.5), and did worse than both benchmarks (RMSE 366 vs 252 and 218 \$/t).
-- Backtested a rule that buys the 3-month contract whenever it trades below Canada import parity: +276 \$/t per trade with 10 of 11 trades profitable, against +80 \$/t for always being long. This is in-sample, before costs, and from a single regime.
-- Read the August 2026 US–Canada tariff episode against the parity model. A Canada-only cut to 25% would lower Canada parity by ~920 \$/t, but deferred CME contracts fell only ~270 \$/t. This is consistent with Canada not being the marginal supplier to the US.
+- Read the August 2026 US–Canada tariff episode against the parity model. A Canada-only cut to 25% would lower Canada parity by ~920 \$/t, but the CME Oct-26 contract fell 298 \$/t on 20 Aug and regained 301 \$/t when talks collapsed on 24 Aug. The ~920 holds only if Canada stays the price-setter after the cut, and it can't: Canada's total exports (~200 kt/month) fall short of US crude imports (~225 kt/month under 50%, ~300 before), so the last tonne would still pay 50%. Canada is the marginal tonne under a uniform tariff, not under one that favours it.
 
 **Risk: the tariff couples the premium to LME**
 - Framed the change as a causal one. Before the tariff, LME and the premium moved together only through common causes (global supply and demand). A duty charged on value adds a direct link: at import parity, ∂MWP/∂LME = t, set by the tariff rule rather than estimated.
@@ -62,7 +61,7 @@ The rate depends on the **origin**, not only on the date. Dates and rates are co
 
 Two consequences for the model:
 
-- **Canada paid 0% for most of 2019–2025, while other origins paid 10%.** The first event that hit the marginal (Canadian) tonne was 12 March 2025, not June 2025, so both steps are analysed separately.
+- **Canada paid 0% for most of 2019–2025, while other origins paid 10%.** The first event that hit Canadian tonnes was 12 March 2025, not June 2025, so both steps are analysed separately.
 - **Duty basis.** The model treats the duty on primary metal (HTS 7601) as ad valorem on customs value. Customs value is roughly the FOB price, LME + origin premium, and excludes international freight. The 2 April 2026 overhaul changed how derivatives are valued and does not affect unwrought metal, so it is not a tariff step in the price model. It is marked on the charts for reference.
 
 ## Method
@@ -78,7 +77,7 @@ Gap(origin, m)    = (LME(m) + MWP(m)) − Landed(origin, m)
 `P_origin` is the premium the tonne gives up by going to the US instead of its best alternative. That alternative differs by route, so the two routes use different European premiums:
 
 - **Rotterdam → Midwest: `P_origin` = DUP.** This is the world-market tonne. Metal in Rotterdam bonded warehouses that is re-exported never clears EU customs, so it never pays the EU's 3% duty. Its opportunity cost is the duty-unpaid price, LME + DUP. Using DP here would charge the US route with an EU duty it never pays (about 3% × (LME + DUP), ≈ 70–90 \$/t). Freight is transatlantic plus inland. Europe ships almost no primary metal to the US, so this route is a *would-it-pay* test rather than an observed flow.
-- **Canada → Midwest: `P_origin` = DP − Freight_Canada→Rotterdam.** This is the marginal tonne, about 60–75% of US crude imports. Canadian aluminium enters the EU duty-free under CETA, so a Canadian tonne diverted to Europe can be cleared and sold at the *duty-paid* price without paying the duty. Its alternative is therefore LME + DP, *netted back* to Canada by subtracting transatlantic freight. Adding the full Rotterdam premium and then Canada→MW freight on top would price Canadian metal as if it were already in Rotterdam. Freight to the Midwest is short rail or truck haul.
+- **Canada → Midwest: `P_origin` = DP − Freight_Canada→Rotterdam.** About 60–75% of US crude imports. Under a uniform tariff it is the marginal tonne: at 50% Canada split its exports between the US and Europe, so it was indifferent between the two. Before 2025, when Canada paid 0% and others 10%, it sent ~94% to the US and the premium sat above its parity, so it earned a rent rather than setting the price. Canadian aluminium enters the EU duty-free under CETA, so a Canadian tonne diverted to Europe can be cleared and sold at the *duty-paid* price without paying the duty. Its alternative is therefore LME + DP, *netted back* to Canada by subtracting transatlantic freight. Adding the full Rotterdam premium and then Canada→MW freight on top would price Canadian metal as if it were already in Rotterdam. Freight to the Midwest is short rail or truck haul.
 
 Freight is an assumption with a sensitivity band, because no free series exists. All results are shown at low, mid and high freight. The Canada route has two freight legs: the netback leg (Canada → Rotterdam) and the delivery leg (Canada → Midwest).
 

@@ -219,7 +219,7 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
         <details class="data" data-chart="c-err"><summary>Data table</summary><div class="tbl"></div></details>
       </figure>
     </div>
-    <div class="grid three">
+    <div class="grid">
       <figure class="panel">
         <figcaption><h3>Forecast accuracy by regime</h3><p class="sub">RMSE, $/t. Lower is better.</p></figcaption>
         <div class="cw"><canvas id="c-rmse" role="img" aria-label="Grouped bar chart of forecast RMSE by regime"></canvas></div>
@@ -227,15 +227,9 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
         <details class="data" data-chart="c-rmse"><summary>Data table</summary><div class="tbl"></div></details>
       </figure>
       <figure class="panel">
-        <figcaption><h3>Backtest: buy M03 below Canada parity</h3><p class="sub">Mean P&amp;L per trade, $/t, held to settlement.</p></figcaption>
-        <div class="cw"><canvas id="c-rule" role="img" aria-label="Bar chart comparing the parity rule with always long"></canvas></div>
-        <p class="take" id="t-rule"></p>
-        <details class="data" data-chart="c-rule"><summary>Data table</summary><div class="tbl"></div></details>
-      </figure>
-      <figure class="panel">
-        <figcaption><h3>August 2026: the Canada-only cut</h3><p class="sub">Change, $/t. Model move against the observed market move.</p></figcaption>
-        <div class="cw"><canvas id="c-aug" role="img" aria-label="Bar chart comparing the modelled parity drop with the CME futures drop"></canvas></div>
-        <p class="take">The market moved <b>less than a third</b> of the Canada parity cut. That fits Canada not being the marginal supplier to the US.</p>
+        <figcaption><h3>August 2026: the Canada-only cut</h3><p class="sub">Change, $/t. Canada parity if Canada stayed the price-setter, against CME Oct-26 daily settlements.</p></figcaption>
+        <div class="cw"><canvas id="c-aug" role="img" aria-label="Bar chart comparing the modelled Canada parity drop with the CME Oct-26 moves on 20 and 24 August 2026"></canvas></div>
+        <p class="take" id="t-aug"></p>
         <details class="data" data-chart="c-aug"><summary>Data table</summary><div class="tbl"></div></details>
       </figure>
     </div>
@@ -333,9 +327,9 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
       <li><b>Freight is an assumption.</b> No free series exists, so every parity result carries a low–high band. Before 2025 the Canada route sat 80–180 $/t above parity at a 0% tariff, so small gaps are not arbitrage.</li>
       <li><b>Hormuz is a separate shock.</b> The Strait closed on 2 Mar 2026 and drove the jump in Rotterdam premiums and the fall in Gulf imports. Tariff attribution uses months up to Feb 2026.</li>
       <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half the CME size. Stale quotes are flagged in every test, and the risk test uses CME settlements.</li>
-      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime. The trading rule is in-sample and before costs. The CME risk test is one contract over 80 trading days, with only about 8 independent 10-day windows.</li>
+      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime. The CME risk test is one contract over 80 trading days, with only about 8 independent 10-day windows.</li>
       <li><b>Rotterdam duty-unpaid after Oct 2025 is reconstructed</b> from duty-paid at an effective EU duty of 2.7% (backtest error ±13 $/t). The Canada route uses duty-paid, which is observed.</li>
-      <li><b>Aug 2026 is not fully fixed.</b> The last premium is M01 on 28 Aug. The CME move is from press reports, not settlement data.</li>
+      <li><b>Aug 2026 is not fully fixed.</b> The last premium is M01 on 28 Aug.</li>
     </ul>
   </section>
 
@@ -379,9 +373,8 @@ document.getElementById("t-implied").innerHTML =
   `Backing the rate out of parity gives <b>${Math.round(IR.actual_25)}% and ${Math.round(IR.actual_50)}%</b> in the two regimes. The forward premium implied <b>${Math.round(IR.fwd_50)}%</b> in Jul–Dec 2025.`;
 document.getElementById("t-err").innerHTML =
   `Before the tariff the curve was unbiased: <b>${sgn(FS.pre.mean_err)} $/t</b> over ${FS.pre.n} forecasts. Under 50% before Hormuz it came in below the outcome <b>in all ${FS.t50.n}</b>, by ${n0(FS.t50.mean_err)} $/t on average (Newey–West t = ${FS.t50.t_nw.toFixed(1)}). Since Hormuz: ${sgn(FS.hormuz.mean_err)} $/t over ${FS.hormuz.n}.`;
-const R = D.forecast.rule;
-document.getElementById("t-rule").innerHTML =
-  `${R.signal.wins} of ${R.signal.n} trades profitable. In-sample, before costs and from a single regime: a hypothesis to re-test on CME data.`;
+document.getElementById("t-aug").innerHTML =
+  `The market priced <b>a third</b> of the parity cut, and took it back when talks collapsed. −${n0(D.aug26.parity_drop)} assumes Canada would still set the price after the cut. It can't: Canada exported ~${n0(CX.world_t50)} kt/month to all destinations under 50%, short of US crude imports (${n0(OC["Total crude"].base)} kt/month before the tariff, ${n0(OC["Total crude"].t50)} even under 50%), so the last tonne would still pay 50%. −${n0(D.aug26.parity_drop)} is the upper bound on the drop, not the forecast.`;
 const RM = RK.monthly, RB = RK.cme_betas, RP = RK.policy, b10 = RB[2], b5 = RB[1];
 document.getElementById("t-cme").innerHTML =
   `From June to September the contract <b>tracked half of every LME move</b>, apart from tariff news: on 20 Aug it fell <b>${n0(-RP.drop)} $/t</b> when a 25% rate for Canada was signalled, and recovered ${n0(RP.rise)} $/t when talks collapsed.`;
@@ -402,7 +395,7 @@ document.getElementById("t-cax").innerHTML =
 document.getElementById("t-prod").innerHTML =
   `By Q2 2026 scrap was <b>${pct(PC.Scrap.pct)}</b> and semis <b>${pct(PC.Semis.pct)}</b> against baseline. Crude's share of imports fell from ${Math.round(PC.crude_share.base)}% to ${Math.round(PC.crude_share.q2_26)}%, and total imports (${n0(PC.total.q2_26)} kt/month) were back at the pre-tariff level (${n0(PC.total.base)}).`;
 document.getElementById("src").innerHTML =
-  `Sources: LME (westmetall.com), USGS Mineral Industry Surveys, UN Comtrade (StatCan), LME Platts/Fastmarkets premium contracts. Freight (Canada → Rotterdam, Canada → Midwest) 30/50/80 $/t low/mid/high. Full method and caveats in <a href="https://github.com/ricardo-sonda/al-mwp#readme">README.md</a> and <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/notebook.ipynb">notebook.ipynb</a>. Built by <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/scripts/build_dashboard.py">scripts/build_dashboard.py</a>.`;
+  `Sources: LME (westmetall.com), USGS Mineral Industry Surveys, UN Comtrade (StatCan), LME Platts/Fastmarkets premium contracts, CME Aluminum MW US Transaction Premium Platts futures, Oct 2026 contract (Barchart.com). Freight (Canada → Rotterdam, Canada → Midwest) 30/50/80 $/t low/mid/high. Full method and caveats in <a href="https://github.com/ricardo-sonda/al-mwp#readme">README.md</a> and <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/notebook.ipynb">notebook.ipynb</a>. Built by <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/scripts/build_dashboard.py">scripts/build_dashboard.py</a>.`;
 
 /* ---------- chart plumbing ---------- */
 const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -615,22 +608,14 @@ function build() {
     scales: { y: { grace: "12%" }, x: { ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
   () => ({ head: ["Regime", "Forecasts", "M03", "No change", "Canada parity", "Mean error M03"], rows: regs.map(r => [WL[r], FS[r].n, n0(FS[r].rmse_fut), n0(FS[r].rmse_nochange), n0(FS[r].rmse_parity), sgn(FS[r].mean_err)]) }));
 
-  /* 2d. trading rule */
-  make("c-rule", { type: "bar", data: { labels: [["Buy when M03", "< Canada parity"], ["Always long", "M03"]], datasets: [
-    { label: "Mean P&L per trade", data: [R.signal.pnl, R.always.pnl], backgroundColor: [C.aqua, C.neutral], borderRadius: 3, borderSkipped: "start", maxBarThickness: 40 },
-  ] }, options: merge(baseOpts(), { plugins: { legend: { display: false }, tipLabels: { fmt: v => sgn(v) + " $/t" },
-      tooltip: { callbacks: { title: it => it[0].label.replace(",", " "), label: c => [` ${sgn(c.raw)} $/t per trade`, c.dataIndex === 0 ? ` ${R.signal.wins} of ${R.signal.n} profitable` : ` ${R.always.wins} of ${R.always.n} profitable`] } } },
-    scales: { y: { min: 0, grace: "15%" }, x: { ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
-  () => ({ head: ["Strategy", "Trades", "Profitable", "Mean P&L $/t"], rows: [["Buy M03 below Canada parity", R.signal.n, R.signal.wins, n0(R.signal.pnl)], ["Always long M03", R.always.n, R.always.wins, n0(R.always.pnl)]] }));
-
-  /* 2e. August 2026 */
-  const A = D.aug26;
-  make("c-aug", { type: "bar", data: { labels: [["Canada parity", "50% → 25% (model)"], ["CME deferred", "contracts (reported)"]], datasets: [
-    { label: "Change", data: [-A.parity_drop, -A.cme_drop], backgroundColor: [C.orange, C.aqua], borderRadius: 3, borderSkipped: "start", maxBarThickness: 40 },
-  ] }, options: merge(baseOpts(), { plugins: { legend: { display: false }, tipLabels: { fmt: v => sgn(v) + " $/t" },
-      tooltip: { callbacks: { title: it => it[0].label.replace(",", " "), label: c => c.dataIndex === 0 ? [` ${sgn(c.raw)} $/t`, ` Parity ${n0(A.parity50)} → ${n0(A.parity25)} $/t at Aug 26 levels`] : [` ≈ ${sgn(c.raw)} $/t`, " Oct/Nov contracts −12%, press reports"] } } },
-    scales: { y: { max: 0, grace: "15%" }, x: { position: "top", ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
-  () => ({ head: ["", "$/t"], rows: [["Canada parity at 50%, Aug 26", n0(A.parity50)], ["Canada parity at 25%, Aug 26", n0(A.parity25)], ["Modelled drop", n0(-A.parity_drop)], ["CME deferred contracts (reported)", "≈ −270"]] }));
+  /* 2d. August 2026 */
+  const A = D.aug26, AP = RK.policy;
+  make("c-aug", { type: "bar", data: { labels: [["Canada parity", "50% → 25%"], ["CME Oct-26", "20 Aug: cut signalled"], ["CME Oct-26", "24 Aug: talks collapse"]], datasets: [
+    { label: "Change", data: [-A.parity_drop, AP.drop, AP.rise], backgroundColor: [C.orange, C.aqua, C.neutral], borderRadius: 3, borderSkipped: "start", maxBarThickness: 40 },
+  ] }, options: merge(baseOpts(), { plugins: { legend: { display: false }, tipLabels: { fmt: v => sgn(v) + " $/t" }, refLines: { h: [{ y: 0, strong: true }] },
+      tooltip: { callbacks: { title: it => it[0].label.replace(",", ": "), label: c => c.dataIndex === 0 ? [` ${sgn(c.raw)} $/t`, ` Parity ${n0(A.parity50)} → ${n0(A.parity25)} $/t at Aug 26 levels`, " Only if Canada stays the price-setter"] : [` ${sgn(c.raw)} $/t on the day`, ` ${(Math.abs(c.raw) / AP.daily_sd).toFixed(0)}× the usual daily move`] } } },
+    scales: { y: { grace: "15%" }, x: { ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
+  () => ({ head: ["", "$/t"], rows: [["Canada parity at 50%, Aug 26", n0(A.parity50)], ["Canada parity at 25%, Aug 26", n0(A.parity25)], ["Parity drop if Canada stays the price-setter", sgn(-A.parity_drop)], ["CME Oct-26, 20 Aug (settle to settle)", sgn(AP.drop)], ["CME Oct-26, 24 Aug (settle to settle)", sgn(AP.rise)]] }));
 
   /* 3a. CME Oct-26 against half of LME 3M */
   const CP = RK.cme_path;

@@ -163,22 +163,17 @@ for w, s in fc[fc["window"] != "spans"].groupby("window", sort=False):
     fit = sm.OLS(s["err_fut"].values, np.ones(len(s))).fit(cov_type="HAC", cov_kwds={"maxlags": 1})
     fstats[w]["t_nw"] = float(fit.tvalues[0])
 
-has_par = fc.dropna(subset=["parity"])
-longs = has_par[has_par["parity"] > has_par["m03"]]
-rule = {"signal": {"n": len(longs), "pnl": float(longs["err_fut"].mean()), "wins": int((longs["err_fut"] > 0).sum())},
-        "always": {"n": len(has_par), "pnl": float(has_par["err_fut"].mean()),
-                   "wins": int((has_par["err_fut"] > 0).sum())}}
-
 pf = fc.loc["2024-01-01":]
 forecast = {"months": ym(pf["target"]), "realised": rnd(pf["realised"]), "m03": rnd(pf["m03"]),
             "parity": rnd(pf["parity"]), "err": rnd(pf["err_fut"]), "window": pf["window"].tolist(),
-            "fresh": [bool(v) for v in pf["fresh"]], "stats": fstats, "rule": rule}
+            "fresh": [bool(v) for v in pf["fresh"]], "stats": fstats}
 
-# August 2026: Canada parity at 50% vs a Canada-only 25%, at Aug 26 levels (mid freight)
+# August 2026: Canada parity at 50% vs a Canada-only 25%, at Aug 26 levels (mid freight). This is the drop only if
+# Canada stays the marginal supplier after the cut. The observed CME moves are in risk["policy"] (section 3).
 aug = r.loc["2026-08-01"]
 par50 = float(parity_ca(f_net, f_mw, aug["lme"], aug["dp"], 0.50))
 par25 = float(parity_ca(f_net, f_mw, aug["lme"], aug["dp"], 0.25))
-aug26 = {"parity50": par50, "parity25": par25, "parity_drop": par50 - par25, "cme_drop": 270}
+aug26 = {"parity50": par50, "parity25": par25, "parity_drop": par50 - par25}
 
 # ---------------------------------------------------------------- 3. risk: the tariff couples the premium to LME
 # Monthly: slope of Δ premium on Δ LME cash (monthly averages) by regime, MW premium and Rotterdam DP (the control).
@@ -288,7 +283,8 @@ us_share = ex["USA"] / world * 100
 canada_x_change = {"us_share_base": float(ex["USA"].loc[BASE[0]:BASE[1]].sum() / world.loc[BASE[0]:BASE[1]].sum() * 100),
                    "us_share_t50": float(ex["USA"].loc[T50[0]:T50[1]].sum() / world.loc[T50[0]:T50[1]].sum() * 100),
                    "nl_base": float(ex["Netherlands"].loc[BASE[0]:BASE[1]].mean() / 1e3),
-                   "nl_t50": float(ex["Netherlands"].loc[T50[0]:T50[1]].mean() / 1e3)}
+                   "nl_t50": float(ex["Netherlands"].loc[T50[0]:T50[1]].mean() / 1e3),
+                   "world_t50": float(world.loc[T50[0]:T50[1]].mean() / 1e3)}
 
 out = {"price": price,
        "implied": implied, "implied_regimes": implied_regimes, "slope": slope, "forecast": forecast,
@@ -303,7 +299,6 @@ if __name__ == "__main__":
     summary = {k: out[k] for k in ["implied_regimes", "aug26", "origin_change",
                                    "canada_share", "product_change", "canada_x_change", "data_through"]}
     summary["fstats"] = fstats
-    summary["rule"] = rule
     summary["risk"] = {k: v for k, v in risk.items() if k != "cme_path"}
     print(json.dumps(summary, indent=1, default=float))
     tpl = ROOT / "dashboard" / "template.html"
