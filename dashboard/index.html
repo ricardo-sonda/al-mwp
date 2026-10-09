@@ -119,6 +119,14 @@ details.data summary:focus-visible, a:focus-visible { outline: 2px solid var(--a
 .tbl th:first-child, .tbl td:first-child { text-align: left; }
 .tbl thead th { position: sticky; top: 0; background: var(--surface); color: var(--ink-2); font-weight: 500; }
 
+svg.dag { width: 100%; height: auto; max-height: 300px; }
+svg.dag .node rect { fill: var(--bg); stroke: var(--rule); stroke-width: 1; }
+svg.dag .node text { font: 500 11px var(--f-body); fill: var(--ink); text-anchor: middle; }
+svg.dag .edge line { stroke: var(--s-neutral); stroke-width: 1.4; marker-end: url(#ah); }
+svg.dag .edge-new { stroke: var(--s-orange); stroke-width: 2.6; marker-end: url(#ah-o); }
+svg.dag .elab { font: 500 11px var(--f-data); fill: var(--ink-2); }
+svg.dag .elab.new { font-weight: 600; fill: var(--ink); }
+
 /* Caveats */
 .caveats { margin-top: 56px; border-top: 1px solid var(--rule); padding-top: 24px; display: grid; gap: 16px; }
 .caveats h2 { font-size: 20px; font-weight: 600; }
@@ -153,7 +161,7 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <h1>Has the Midwest premium priced in the Section 232 tariffs?</h1>
     <p class="answer"><strong>The physical premium did, in full. The futures curve did not.</strong>
       Import parity explains the premium at the statutory 25% and 50% rates, while the forward curve kept pricing a relief that never came.
-      The tariff also raised the LME hedge ratio of US-delivered metal above 1 and pushed Canadian metal toward Europe.</p>
+      The tariff also tied the premium directly to LME, so premium positions now carry LME risk, and it pushed Canadian metal toward Europe.</p>
     <a class="repo" href="https://github.com/ricardo-sonda/al-mwp"><span>Full repo here:</span> github.com/ricardo-sonda/al-mwp →</a>
     <p class="meta" id="asof"></p>
   </header>
@@ -243,32 +251,53 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
   <section class="strand" id="risk">
     <div class="strand-head">
       <span class="strand-no">3</span>
-      <h2>Risk: a 1:1 LME hedge is too small under an ad valorem tariff</h2>
-      <p>A tariff charged on value makes the parity premium move with LME: ∂MWP/∂LME = t. A tonne of US-delivered metal then moves like 1 + t tonnes of LME, so at 50% theory says 1.5.</p>
+      <h2>Risk: the tariff ties the premium to LME</h2>
+      <p>Before the tariff, LME and the premium moved together only through common causes. A duty charged on value adds a direct link: at import parity the premium contains t × (LME + DP − freight), so ∂MWP/∂LME = t. At 50%, every 100 $/t on LME should add about 50 $/t to the premium, and the rise should be specific to the US.</p>
     </div>
     <div class="grid three">
       <figure class="panel span2">
-        <figcaption><h3>Minimum-variance LME hedge ratio for the all-in Midwest price</h3><p class="sub">Tonnes of LME per tonne of US-delivered metal, rolling 12 months of monthly changes.</p></figcaption>
-        <div class="cw"><canvas id="c-hedge" role="img" aria-label="Line chart of the rolling hedge ratio against the theoretical 1 plus t"></canvas></div>
-        <p class="take" id="t-hedge"></p>
-        <details class="data" data-chart="c-hedge"><summary>Data table</summary><div class="tbl"></div></details>
+        <figcaption><h3>CME Oct-26 MW futures against half of LME 3M</h3><p class="sub">Change since 1 Jun 2026, $/t, daily settlements. 0.5 × LME 3M is the duty link alone at t = 50%.</p></figcaption>
+        <div class="cw"><canvas id="c-cme" role="img" aria-label="Line chart of the CME Oct-26 MW premium futures and half of LME 3M, June to September 2026"></canvas></div>
+        <p class="take" id="t-cme"></p>
+        <details class="data" data-chart="c-cme"><summary>Data table</summary><div class="tbl"></div></details>
       </figure>
       <figure class="panel">
-        <figcaption><h3>Residual risk after hedging</h3><p class="sub">Std. dev. of monthly changes, $/t.</p></figcaption>
-        <div class="cw"><canvas id="c-resid" role="img" aria-label="Grouped bar chart of residual risk by regime and hedge"></canvas></div>
-        <p class="take">With a 1:1 hedge, risk rose <b>from 50 to 90 $/t</b>. The 90 includes the Gulf shock.</p>
-        <details class="data" data-chart="c-resid"><summary>Data table</summary><div class="tbl"></div></details>
-      </figure>
-      <figure class="panel span2">
-        <figcaption><h3>How much of an LME move the MW futures curve picks up</h3><p class="sub">β of a fixed MW futures contract on LME 3M over the same window, weekly data, with 95% intervals (HAC).</p></figcaption>
-        <div class="cw"><canvas id="c-beta" role="img" aria-label="Dot plot of weekly betas by horizon and regime with confidence intervals"></canvas></div>
-        <details class="data" data-chart="c-beta"><summary>Data table</summary><div class="tbl"></div></details>
+        <figcaption><h3>What the tariff changed</h3><p class="sub">Causal links into the Midwest premium. The orange arrow is new.</p></figcaption>
+        <svg class="dag" viewBox="0 0 360 252" role="img" aria-label="Diagram: global supply and demand drives LME, the European premium and US supply and demand; the premium depends on the European premium (times 1 plus t), US supply and demand, and, under the tariff, directly on LME (times t)">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--s-neutral)"/></marker>
+            <marker id="ah-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--s-orange)"/></marker>
+          </defs>
+          <g class="edge"><line x1="152" y1="50" x2="82" y2="103"/><line x1="180" y1="50" x2="180" y2="103"/><line x1="208" y1="50" x2="278" y2="103"/>
+            <line x1="180" y1="146" x2="180" y2="203"/><line x1="282" y1="146" x2="214" y2="203"/></g>
+          <line class="edge-new" x1="78" y1="146" x2="144" y2="203"/>
+          <text class="elab" x="174" y="170" text-anchor="end">× (1 + t)</text>
+          <text class="elab new" x="98" y="190" text-anchor="end">× t</text>
+          <g class="node"><rect x="122" y="10" width="116" height="40" rx="6"/><text x="180" y="27">Global supply</text><text x="180" y="41">and demand</text></g>
+          <g class="node"><rect x="4" y="106" width="108" height="40" rx="6"/><text x="58" y="130">LME price</text></g>
+          <g class="node"><rect x="122" y="106" width="116" height="40" rx="6"/><text x="180" y="123">European premium</text><text x="180" y="137">(Rotterdam DP)</text></g>
+          <g class="node"><rect x="248" y="106" width="108" height="40" rx="6"/><text x="302" y="123">US supply</text><text x="302" y="137">and demand</text></g>
+          <g class="node"><rect x="122" y="206" width="116" height="40" rx="6"/><text x="180" y="230">Midwest premium</text></g>
+        </svg>
+        <p class="take">Before the tariff there was <b>no direct arrow</b>: the premium's LME beta was a statistical estimate. A duty on value adds one of size <b>t</b>, set by the tariff rule for as long as the premium sits at import parity.</p>
       </figure>
       <figure class="panel">
-        <figcaption><h3>What this means for a hedger</h3><p class="sub">From the weekly and lead–lag regressions.</p></figcaption>
-        <p class="take" style="border-top:0;padding-top:0">The curve reacts to LME <b>one to two months late</b>. The beta is ~0 at one week and reaches 0.7 at eight weeks under 50%, close to t = 0.5.</p>
-        <p class="take">This week's LME move <b>predicts the next four weeks</b> of futures moves, even holding those weeks' LME moves fixed. A daily delta understates the premium's LME exposure.</p>
-        <p class="take">The LME MW settlements are often stale, so these weekly tests should be re-run on CME AUP data.</p>
+        <figcaption><h3>Monthly: premium β on LME by regime</h3><p class="sub">Slope of Δ premium on Δ LME cash, monthly averages, 95% intervals (HAC). Rotterdam DP is the control: no US tariff.</p></figcaption>
+        <div class="cw"><canvas id="c-rmon" role="img" aria-label="Dot plot of the MW premium and Rotterdam DP betas on LME by regime, with confidence intervals and the theory band"></canvas></div>
+        <p class="take" id="t-rmon"></p>
+        <details class="data" data-chart="c-rmon"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>Futures: CME Oct-26 β on LME 3M</h3><p class="sub">Over 1-, 5- and 10-day changes, Jun–Sep 2026, tariff-news days left out. Grey: pre-tariff baseline from the LME MW contract, monthly changes.</p></figcaption>
+        <div class="cw"><canvas id="c-rcme" role="img" aria-label="Dot plot of the CME Oct-26 beta on LME 3M by horizon against the pre-tariff baseline and the theory band"></canvas></div>
+        <p class="take" id="t-rcme"></p>
+        <details class="data" data-chart="c-rcme"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>What this means for a hedger</h3><p class="sub">From the CME Oct-26 contract, Jun–Sep 2026.</p></figcaption>
+        <p class="take" style="border-top:0;padding-top:0" id="t-h1"></p>
+        <p class="take" id="t-h2"></p>
+        <p class="take" id="t-h3"></p>
       </figure>
     </div>
   </section>
@@ -312,8 +341,8 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <ul class="cav-list">
       <li><b>Freight is an assumption.</b> No free series exists, so every parity result carries a low–high band. Before 2025 the Canada route sat 80–180 $/t above parity at a 0% tariff, so small gaps are not arbitrage.</li>
       <li><b>Hormuz is a separate shock.</b> The Strait closed on 2 Mar 2026 and drove the jump in Rotterdam premiums and the fall in Gulf imports. Tariff attribution uses months up to Feb 2026.</li>
-      <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half the CME size. Stale quotes are flagged in every test.</li>
-      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime. The trading rule is in-sample and before costs.</li>
+      <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half the CME size. Stale quotes are flagged in every test, and the risk test uses CME settlements.</li>
+      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime. The trading rule is in-sample and before costs. The CME risk test is one contract over 80 trading days, with only about 8 independent 10-day windows.</li>
       <li><b>Rotterdam duty-unpaid after Oct 2025 is reconstructed</b> from duty-paid at an effective EU duty of 2.7% (backtest error ±13 $/t). The Canada route uses duty-paid, which is observed.</li>
       <li><b>Aug 2026 is not fully fixed.</b> The last premium is M01 on 28 Aug. The CME move is from press reports, not settlement data.</li>
     </ul>
@@ -324,7 +353,7 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-const D = {"price":{"months":["2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"],"mwp":[620.0,651.0,619.0,564.0,535.0,553.0,516.0,480.0,456.0,434.0,422.0,433.0,429.0,399.0,411.0,424.0,445.0,454.0,413.0,434.0,423.0,419.0,480.0,509.0,539.0,794.0,850.0,856.0,841.0,1279.0,1499.0,1575.0,1633.0,1803.0,1935.0,1979.0,2176.0,2304.0,2403.0,2448.0,2547.0,2508.0,2383.0,2467.0],"parity":[282.0,303.0,324.0,330.0,328.0,314.0,298.0,281.0,253.0,218.0,195.0,194.0,231.0,248.0,263.0,300.0,330.0,338.0,339.0,340.0,342.0,340.0,345.0,359.0,357.0,283.0,675.0,832.0,844.0,1451.0,1560.0,1587.0,1663.0,1797.0,1876.0,1908.0,2063.0,2049.0,2385.0,2654.0,2703.0,2548.0,2330.0,2326.0],"parity_lo":[232.0,253.0,274.0,280.0,278.0,264.0,248.0,231.0,203.0,168.0,145.0,144.0,181.0,198.0,213.0,250.0,280.0,288.0,289.0,290.0,292.0,290.0,295.0,309.0,307.0,233.0,620.0,775.0,786.0,1387.0,1495.0,1522.0,1598.0,1732.0,1811.0,1843.0,1998.0,1984.0,2320.0,2589.0,2638.0,2483.0,2265.0,2261.0],"parity_hi":[332.0,353.0,374.0,380.0,378.0,364.0,348.0,331.0,303.0,268.0,245.0,244.0,281.0,298.0,313.0,350.0,380.0,388.0,389.0,390.0,392.0,390.0,395.0,409.0,407.0,333.0,728.0,887.0,899.0,1510.0,1620.0,1647.0,1723.0,1857.0,1936.0,1968.0,2123.0,2109.0,2445.0,2714.0,2763.0,2608.0,2390.0,2386.0],"lme":[2489.0,2417.0,2290.0,2341.0,2268.0,2181.0,2152.0,2134.0,2178.0,2192.0,2202.0,2174.0,2194.0,2183.0,2222.0,2498.0,2565.0,2495.0,2362.0,2334.0,2452.0,2598.0,2583.0,2538.0,2575.0,2653.0,2657.0,2381.0,2442.0,2516.0,2604.0,2594.0,2653.0,2786.0,2823.0,2875.0,3148.0,3065.0,3370.0,3601.0,3670.0,3459.0,3156.0,3250.0]},"implied":{"months":["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"],"actual":[8.3,6.4,6.1,4.5,4.0,4.2,2.8,3.6,3.0,2.7,4.7,5.3,6.3,17.7,22.3,25.9,24.9,41.0,47.8,49.6,48.9,50.2,51.9,52.3,53.3,57.6,50.5,45.0,46.3,49.0,51.4,53.8],"forward":[9.0,7.2,6.6,4.5,5.0,4.0,3.2,3.4,3.2,3.3,4.3,5.6,9.0,14.9,22.4,25.9,24.7,39.1,50.3,40.7,47.7,44.6,46.7,44.5,52.4,50.9,47.1,46.3,47.6,56.3,51.6,48.7],"statutory":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,16.1,25.0,25.0,47.5,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0]},"implied_regimes":{"actual_25":25.403717130981512,"actual_50":50.11487078751714,"fwd_50":45.76424304677861},"slope":{"months":["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"],"slope":[34.0,25.0,32.0,11.0,44.0,11.0,7.0,22.0,28.0,13.0,-4.0,24.0,89.0,-87.0,-33.0,13.0,6.0,-13.0,61.0,-232.0,-23.0,-119.0,-144.0,-185.0,-50.0,-162.0,-62.0,-12.0,45.0,69.0,17.0,-192.0]},"forecast":{"months":["2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"],"realised":[411.0,424.0,445.0,454.0,413.0,434.0,423.0,419.0,480.0,509.0,539.0,794.0,850.0,856.0,841.0,1279.0,1499.0,1575.0,1633.0,1803.0,1935.0,1979.0,2176.0,2304.0,2403.0,2448.0,2547.0,2508.0,2383.0,2467.0],"m03":[450.0,422.0,428.0,428.0,480.0,451.0,422.0,435.0,435.0,435.0,469.0,519.0,619.0,709.0,827.0,868.0,838.0,1256.0,1558.0,1339.0,1609.0,1678.0,1786.0,1786.0,2138.0,2130.0,2339.0,2447.0,2608.0,2601.0],"parity":[231.0,248.0,263.0,300.0,330.0,338.0,339.0,340.0,342.0,340.0,345.0,359.0,357.0,283.0,897.0,845.0,845.0,1555.0,1548.0,1597.0,1675.0,1845.0,1890.0,1965.0,2055.0,2098.0,2453.0,2594.0,2711.0,2374.0],"err":[-39.0,3.0,17.0,25.0,-67.0,-17.0,2.0,-16.0,45.0,73.0,70.0,275.0,231.0,146.0,14.0,411.0,661.0,318.0,75.0,464.0,326.0,302.0,390.0,518.0,265.0,317.0,208.0,61.0,-225.0,-134.0],"window":["pre","pre","pre","pre","pre","pre","pre","pre","pre","pre","pre","spans","spans","spans","spans","spans","spans","t50","t50","t50","t50","t50","t50","t50","spans","spans","hormuz","hormuz","hormuz","hormuz"],"fresh":[false,false,false,false,true,true,false,false,false,false,false,false,true,true,false,false,false,true,true,false,true,false,false,false,true,false,false,true,true,false],"stats":{"pre":{"n":69,"mean_err":13.04057971014493,"share_pos":0.5072463768115942,"rmse_fut":88.4728329218489,"rmse_nochange":85.7363343486076,"rmse_parity":239.25779606535033,"t_nw":0.9610326149825446},"t50":{"n":7,"mean_err":341.8471428571428,"share_pos":1.0,"rmse_fut":366.3802182549863,"rmse_nochange":251.78718545061588,"rmse_parity":217.88538625354644,"t_nw":7.540080563528902},"hormuz":{"n":4,"mean_err":-22.567499999999995,"share_pos":0.5,"rmse_fut":169.94186689865447,"rmse_nochange":115.1446036512348,"rmse_parity":182.1573322879152,"t_nw":-0.2427344786136598}},"rule":{"signal":{"n":11,"pnl":276.0027272727272,"wins":10},"always":{"n":60,"pnl":79.607,"wins":35}}},"aug26":{"parity50":2326.3825,"parity25":1405.38125,"parity_drop":921.0012500000003,"cme_drop":270},"hedge_roll":{"months":["2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"],"ratio":[1.325,1.357,1.448,1.61,1.577,1.521,1.489,1.435,1.156,1.066,1.366,1.369,1.381,1.349,1.328,1.215,1.183,1.209,1.216,1.207,1.212,1.212,1.184,1.185,1.175,1.172,1.159,1.19,1.318,1.267,1.218,1.252,1.235,1.249,1.283,1.309,0.848,0.911,0.873,1.073,1.073,1.092,1.108,1.085,1.076,1.064,1.038,1.027,1.027,1.085,1.079,1.172,1.157,1.34,1.329,1.31,1.403,1.595,1.585,1.531,1.452,1.395,1.251,1.035,1.001,1.228,1.349,1.352],"theory":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.161,1.25,1.25,1.475,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5]},"hedge_regimes":{"pre":{"months":70,"ratio":1.218009324501835,"se":0.05059434589259957,"resid_1to1":50.37395286706632,"resid_opt":41.57204516403486},"t50_pre_hormuz":{"months":8,"ratio":1.3200266941278662,"se":0.10526546809868881,"resid_1to1":65.20699227131594,"resid_opt":55.92533996679485},"hormuz":{"months":6,"ratio":1.332174504677858,"se":0.06437409740055357,"resid_1to1":91.24838957483044,"resid_opt":43.810456012270606},"t50_all":{"months":14,"ratio":1.3605308164326844,"se":0.13689997643887467,"resid_1to1":90.44979373864078,"resid_opt":66.78864741188991}},"betas":{"pre":[{"h":1,"beta":0.02635911191499912,"se":0.021658985639801103},{"h":2,"beta":0.07101575367360305,"se":0.027904345998368427},{"h":4,"beta":0.15246030262662572,"se":0.04125423429500652},{"h":8,"beta":0.1993368020329576,"se":0.04386833338105301}],"t50":[{"h":1,"beta":-0.18152008024219662,"se":0.19581146930931603},{"h":2,"beta":0.23022385131409823,"se":0.17309968346548785},{"h":4,"beta":0.3953873841879266,"se":0.26856139375489146},{"h":8,"beta":0.7029163861349503,"se":0.3002125737572104}],"hormuz":[{"h":1,"beta":0.012826462432255903,"se":0.07841974186376564},{"h":2,"beta":-0.012449624531391604,"se":0.08780528603967401},{"h":4,"beta":0.08573423133500743,"se":0.05615457191509891},{"h":8,"beta":0.26477513034899663,"se":0.08980837385191533}]},"flows_origin":{"months":["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06"],"series":{"Canada":[233.0,269.0,219.0,243.0,202.0,232.0,235.0,203.0,246.0,241.0,200.0,216.0,248.0,209.0,250.0,166.0,147.0,149.0,101.0,111.0,123.0,143.0,144.0,153.0,166.0,151.0,170.0,151.0,138.0,129.0],"United Arab Emirates":[26.0,27.3,15.9,43.1,36.2,32.6,28.9,26.5,31.2,28.3,23.2,24.7,46.9,28.9,95.6,34.6,51.4,31.6,35.9,45.1,27.8,33.6,25.6,21.3,44.5,35.8,79.4,33.3,15.8,22.5],"Argentina":[10.2,20.6,10.3,7.6,7.7,35.3,2.8,8.3,33.7,1.8,3.8,22.5,12.1,9.3,18.0,0.3,0.0,20.6,4.1,8.4,21.2,7.8,11.5,15.3,12.3,11.3,16.8,6.6,25.5,13.5],"India":[8.3,4.1,3.7,5.3,6.6,18.5,2.4,0.7,0.9,4.7,4.0,15.0,6.3,4.8,27.4,11.8,4.4,45.5,3.4,29.4,1.0,1.9,2.3,7.1,14.1,18.2,19.5,13.7,14.7,13.2],"Bahrain":[5.2,3.4,5.9,14.8,8.6,9.5,9.5,8.7,6.7,11.3,17.2,8.4,12.7,3.8,17.5,10.7,18.7,10.2,6.0,6.6,14.0,12.7,14.2,8.8,8.8,2.7,14.3,5.2,1.8,2.3],"Rest":[14.4,19.6,15.2,16.1,8.9,12.1,14.3,20.9,13.5,9.9,14.8,10.4,9.0,42.1,29.5,19.6,5.5,20.1,9.6,10.5,7.0,8.9,10.4,13.5,21.2,13.0,23.0,20.2,18.2,22.5]}},"origin_change":{"Canada":{"base":224.5,"t50":140.22222222222223,"pct":-37.540212818609255},"United Arab Emirates":{"base":30.53333333333333,"t50":38.77777777777778,"pct":27.001455604075698},"Argentina":{"base":12.939166666666667,"t50":12.08222222222222,"pct":-6.622871986432244},"India":{"base":6.078916666666667,"t50":10.783333333333333,"pct":77.38906329252744},"Bahrain":{"base":9.764166666666668,"t50":9.795555555555556,"pct":0.32147022844299933},"Rest":{"base":15.601083333333333,"t50":13.005555555555556,"pct":-16.636843239162513},"Total crude":{"base":299.4166666666667,"t50":224.66666666666666,"pct":-24.96521013080991}},"canada_share":{"base":74.97912607848593,"t50":62.41345202769536},"products":{"quarters":["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025","Q1 2026","Q2 2026"],"series":{"Crude":[303.7,313.3,297.7,285.7,357.0,249.0,188.3,211.7,274.0,215.7],"Semis":[97.3,113.0,100.2,97.6,108.2,97.4,89.5,105.0,140.7,158.3],"Scrap":[52.1,57.4,63.5,60.6,68.2,74.7,53.3,54.9,87.0,109.7]}},"product_change":{"Crude":{"base":299.4166666666667,"q2_26":215.66666666666666,"pct":-27.971054828833854},"Semis":{"base":104.5,"q2_26":158.33333333333334,"pct":51.515151515151516},"Scrap":{"base":60.041666666666664,"q2_26":109.66666666666667,"pct":82.65093684941014},"crude_share":{"base":64.53524921418949,"q2_26":44.58993797381116},"total":{"base":463.95833333333337,"q2_26":483.6666666666667}},"canada_exports":{"months":["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07"],"series":{"USA":[233.2,269.7,219.5,243.8,203.0,232.6,235.7,203.2,246.4,241.5,200.4,216.4,240.5,209.4,250.5,183.8,167.8,129.9,123.7,123.5,138.9,149.6,132.0,158.8,133.1,165.1,173.1,148.2,129.5,123.7,137.0],"Netherlands":[0.0,10.9,33.9,20.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,11.8,0.0,62.8,15.0,19.0,50.4,77.4,90.2,45.9,35.6,21.0,30.7,0.0,50.7,20.2,35.0],"Other":[2.2,2.4,7.7,6.7,9.3,6.7,40.1,8.5,11.1,9.6,6.3,10.9,7.4,6.0,7.5,4.7,27.4,11.7,0.7,44.7,45.2,3.2,2.2,17.7,6.8,5.8,7.8,25.4,58.4,20.8,12.4]}},"canada_x_change":{"us_share_base":93.59927915186306,"us_share_t50":71.4319702968158,"nl_base":4.490741666666666,"nl_t50":42.77768788888889},"data_through":{"premium":"2026-08","imports":"2026-06","canada":"2026-07"}};
+const D = {"price":{"months":["2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"],"mwp":[620.0,651.0,619.0,564.0,535.0,553.0,516.0,480.0,456.0,434.0,422.0,433.0,429.0,399.0,411.0,424.0,445.0,454.0,413.0,434.0,423.0,419.0,480.0,509.0,539.0,794.0,850.0,856.0,841.0,1279.0,1499.0,1575.0,1633.0,1803.0,1935.0,1979.0,2176.0,2304.0,2403.0,2448.0,2547.0,2508.0,2383.0,2467.0],"parity":[282.0,303.0,324.0,330.0,328.0,314.0,298.0,281.0,253.0,218.0,195.0,194.0,231.0,248.0,263.0,300.0,330.0,338.0,339.0,340.0,342.0,340.0,345.0,359.0,357.0,283.0,675.0,832.0,844.0,1451.0,1560.0,1587.0,1663.0,1797.0,1876.0,1908.0,2063.0,2049.0,2385.0,2654.0,2703.0,2548.0,2330.0,2326.0],"parity_lo":[232.0,253.0,274.0,280.0,278.0,264.0,248.0,231.0,203.0,168.0,145.0,144.0,181.0,198.0,213.0,250.0,280.0,288.0,289.0,290.0,292.0,290.0,295.0,309.0,307.0,233.0,620.0,775.0,786.0,1387.0,1495.0,1522.0,1598.0,1732.0,1811.0,1843.0,1998.0,1984.0,2320.0,2589.0,2638.0,2483.0,2265.0,2261.0],"parity_hi":[332.0,353.0,374.0,380.0,378.0,364.0,348.0,331.0,303.0,268.0,245.0,244.0,281.0,298.0,313.0,350.0,380.0,388.0,389.0,390.0,392.0,390.0,395.0,409.0,407.0,333.0,728.0,887.0,899.0,1510.0,1620.0,1647.0,1723.0,1857.0,1936.0,1968.0,2123.0,2109.0,2445.0,2714.0,2763.0,2608.0,2390.0,2386.0],"lme":[2489.0,2417.0,2290.0,2341.0,2268.0,2181.0,2152.0,2134.0,2178.0,2192.0,2202.0,2174.0,2194.0,2183.0,2222.0,2498.0,2565.0,2495.0,2362.0,2334.0,2452.0,2598.0,2583.0,2538.0,2575.0,2653.0,2657.0,2381.0,2442.0,2516.0,2604.0,2594.0,2653.0,2786.0,2823.0,2875.0,3148.0,3065.0,3370.0,3601.0,3670.0,3459.0,3156.0,3250.0]},"implied":{"months":["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"],"actual":[8.3,6.4,6.1,4.5,4.0,4.2,2.8,3.6,3.0,2.7,4.7,5.3,6.3,17.7,22.3,25.9,24.9,41.0,47.8,49.6,48.9,50.2,51.9,52.3,53.3,57.6,50.5,45.0,46.3,49.0,51.4,53.8],"forward":[9.0,7.2,6.6,4.5,5.0,4.0,3.2,3.4,3.2,3.3,4.3,5.6,9.0,14.9,22.4,25.9,24.7,39.1,50.3,40.7,47.7,44.6,46.7,44.5,52.4,50.9,47.1,46.3,47.6,56.3,51.6,48.7],"statutory":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,16.1,25.0,25.0,47.5,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0]},"implied_regimes":{"actual_25":25.403717130981512,"actual_50":50.11487078751714,"fwd_50":45.76424304677861},"slope":{"months":["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"],"slope":[34.0,25.0,32.0,11.0,44.0,11.0,7.0,22.0,28.0,13.0,-4.0,24.0,89.0,-87.0,-33.0,13.0,6.0,-13.0,61.0,-232.0,-23.0,-119.0,-144.0,-185.0,-50.0,-162.0,-62.0,-12.0,45.0,69.0,17.0,-192.0]},"forecast":{"months":["2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"],"realised":[411.0,424.0,445.0,454.0,413.0,434.0,423.0,419.0,480.0,509.0,539.0,794.0,850.0,856.0,841.0,1279.0,1499.0,1575.0,1633.0,1803.0,1935.0,1979.0,2176.0,2304.0,2403.0,2448.0,2547.0,2508.0,2383.0,2467.0],"m03":[450.0,422.0,428.0,428.0,480.0,451.0,422.0,435.0,435.0,435.0,469.0,519.0,619.0,709.0,827.0,868.0,838.0,1256.0,1558.0,1339.0,1609.0,1678.0,1786.0,1786.0,2138.0,2130.0,2339.0,2447.0,2608.0,2601.0],"parity":[231.0,248.0,263.0,300.0,330.0,338.0,339.0,340.0,342.0,340.0,345.0,359.0,357.0,283.0,897.0,845.0,845.0,1555.0,1548.0,1597.0,1675.0,1845.0,1890.0,1965.0,2055.0,2098.0,2453.0,2594.0,2711.0,2374.0],"err":[-39.0,3.0,17.0,25.0,-67.0,-17.0,2.0,-16.0,45.0,73.0,70.0,275.0,231.0,146.0,14.0,411.0,661.0,318.0,75.0,464.0,326.0,302.0,390.0,518.0,265.0,317.0,208.0,61.0,-225.0,-134.0],"window":["pre","pre","pre","pre","pre","pre","pre","pre","pre","pre","pre","spans","spans","spans","spans","spans","spans","t50","t50","t50","t50","t50","t50","t50","spans","spans","hormuz","hormuz","hormuz","hormuz"],"fresh":[false,false,false,false,true,true,false,false,false,false,false,false,true,true,false,false,false,true,true,false,true,false,false,false,true,false,false,true,true,false],"stats":{"pre":{"n":69,"mean_err":13.04057971014493,"share_pos":0.5072463768115942,"rmse_fut":88.4728329218489,"rmse_nochange":85.7363343486076,"rmse_parity":239.25779606535033,"t_nw":0.9610326149825446},"t50":{"n":7,"mean_err":341.8471428571428,"share_pos":1.0,"rmse_fut":366.3802182549863,"rmse_nochange":251.78718545061588,"rmse_parity":217.88538625354644,"t_nw":7.540080563528902},"hormuz":{"n":4,"mean_err":-22.567499999999995,"share_pos":0.5,"rmse_fut":169.94186689865447,"rmse_nochange":115.1446036512348,"rmse_parity":182.1573322879152,"t_nw":-0.2427344786136598}},"rule":{"signal":{"n":11,"pnl":276.0027272727272,"wins":10},"always":{"n":60,"pnl":79.607,"wins":35}}},"aug26":{"parity50":2326.3825,"parity25":1405.38125,"parity_drop":921.0012500000003,"cme_drop":270},"risk":{"monthly":{"pre":{"months":42,"t":0.0,"mw":0.19243132463662407,"mw_se":0.052557740844932845,"dp":0.0993992175029388,"dp_se":0.047652199037323116},"t50":{"months":7,"t":0.5,"mw":0.2954503998126369,"mw_se":0.10546999153522585,"dp":-0.0029846652102087185,"dp_se":0.030170448055438795},"hormuz":{"months":6,"t":0.5,"mw":0.3321745046778578,"mw_se":0.06437409740055275,"dp":0.25871273419401614,"dp_se":0.05755200321437845}},"pooled":{"months":56,"c":0.46397459587700873,"se":0.20182559362689992,"c_dp":0.3250523571080134,"se_dp":0.23982836083628478},"beta_pre":0.19243132463662407,"t":0.5,"cme_betas":[{"h":1,"n":80,"beta":0.21536944028103305,"se":0.10767534857888925,"r2":0.1121900703795089,"risk":24.516090007803626,"risk_overlay":25.52220060149361},{"h":5,"n":72,"beta":0.4278228961639169,"se":0.16223471607582016,"r2":0.3631557888825826,"risk":67.76405478765625,"risk_overlay":54.51450714194152},{"h":10,"n":62,"beta":0.5479016403266324,"se":0.09901235283864492,"r2":0.6532625976330544,"risk":109.51481207469106,"risk_overlay":64.94982292851563}],"cme_path":{"dates":["2026-06-01","2026-06-02","2026-06-03","2026-06-04","2026-06-05","2026-06-08","2026-06-09","2026-06-10","2026-06-11","2026-06-12","2026-06-15","2026-06-16","2026-06-17","2026-06-18","2026-06-22","2026-06-23","2026-06-24","2026-06-25","2026-06-26","2026-06-29","2026-06-30","2026-07-01","2026-07-02","2026-07-06","2026-07-07","2026-07-08","2026-07-09","2026-07-10","2026-07-13","2026-07-14","2026-07-15","2026-07-16","2026-07-17","2026-07-20","2026-07-21","2026-07-22","2026-07-23","2026-07-24","2026-07-27","2026-07-28","2026-07-29","2026-07-30","2026-07-31","2026-08-03","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-21","2026-09-22","2026-09-23","2026-09-24","2026-09-25","2026-09-28","2026-09-29","2026-09-30"],"fut":[0.0,-1.0,-1.0,-1.0,-4.0,-4.0,-11.0,-24.0,-25.0,-17.0,-26.0,-43.0,-61.0,-100.0,-117.0,-177.0,-285.0,-276.0,-265.0,-293.0,-283.0,-293.0,-305.0,-309.0,-309.0,-271.0,-243.0,-247.0,-248.0,-243.0,-265.0,-263.0,-259.0,-254.0,-342.0,-342.0,-342.0,-320.0,-320.0,-326.0,-321.0,-293.0,-276.0,-254.0,-233.0,-232.0,-228.0,-226.0,-221.0,-214.0,-221.0,-231.0,-221.0,-226.0,-231.0,-265.0,-563.0,-537.0,-236.0,-234.0,-265.0,-287.0,-342.0,-306.0,-326.0,-360.0,-354.0,-320.0,-276.0,-320.0,-316.0,-298.0,-298.0,-282.0,-282.0,-282.0,-290.0,-276.0,-265.0,-244.0,-254.0,-265.0,-259.0,-248.0],"half_lme":[0.0,34.0,19.0,-11.0,-8.0,-42.0,-50.0,-102.0,-95.0,-77.0,-127.0,-148.0,-138.0,-142.0,-140.0,-207.0,-262.0,-270.0,-255.0,-260.0,-287.0,-306.0,-310.0,-286.0,-279.0,-269.0,-258.0,-266.0,-269.0,-259.0,-268.0,-260.0,-270.0,-269.0,-258.0,-250.0,-252.0,-262.0,-252.0,-271.0,-254.0,-249.0,-253.0,-237.0,-224.0,-228.0,-213.0,-203.0,-182.0,-156.0,-188.0,-205.0,-220.0,-207.0,-226.0,-237.0,-251.0,-221.0,-225.0,-240.0,-223.0,-235.0,-222.0,-212.0,-216.0,-191.0,-196.0,-183.0,-174.0,-184.0,-218.0,-214.0,-225.0,-198.0,-200.0,-202.0,-206.0,-211.0,-213.0,-216.0,-209.0,-217.0,-227.0,-238.0]},"policy":{"drop":-297.6239999999998,"rise":300.9090000000001,"daily_sd":24.516090007803626},"fut_base":{"n":70,"beta":0.18921946295379638,"se":0.05092653678461709}},"flows_origin":{"months":["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06"],"series":{"Canada":[233.0,269.0,219.0,243.0,202.0,232.0,235.0,203.0,246.0,241.0,200.0,216.0,248.0,209.0,250.0,166.0,147.0,149.0,101.0,111.0,123.0,143.0,144.0,153.0,166.0,151.0,170.0,151.0,138.0,129.0],"United Arab Emirates":[26.0,27.3,15.9,43.1,36.2,32.6,28.9,26.5,31.2,28.3,23.2,24.7,46.9,28.9,95.6,34.6,51.4,31.6,35.9,45.1,27.8,33.6,25.6,21.3,44.5,35.8,79.4,33.3,15.8,22.5],"Argentina":[10.2,20.6,10.3,7.6,7.7,35.3,2.8,8.3,33.7,1.8,3.8,22.5,12.1,9.3,18.0,0.3,0.0,20.6,4.1,8.4,21.2,7.8,11.5,15.3,12.3,11.3,16.8,6.6,25.5,13.5],"India":[8.3,4.1,3.7,5.3,6.6,18.5,2.4,0.7,0.9,4.7,4.0,15.0,6.3,4.8,27.4,11.8,4.4,45.5,3.4,29.4,1.0,1.9,2.3,7.1,14.1,18.2,19.5,13.7,14.7,13.2],"Bahrain":[5.2,3.4,5.9,14.8,8.6,9.5,9.5,8.7,6.7,11.3,17.2,8.4,12.7,3.8,17.5,10.7,18.7,10.2,6.0,6.6,14.0,12.7,14.2,8.8,8.8,2.7,14.3,5.2,1.8,2.3],"Rest":[14.4,19.6,15.2,16.1,8.9,12.1,14.3,20.9,13.5,9.9,14.8,10.4,9.0,42.1,29.5,19.6,5.5,20.1,9.6,10.5,7.0,8.9,10.4,13.5,21.2,13.0,23.0,20.2,18.2,22.5]}},"origin_change":{"Canada":{"base":224.5,"t50":140.22222222222223,"pct":-37.540212818609255},"United Arab Emirates":{"base":30.53333333333333,"t50":38.77777777777778,"pct":27.001455604075698},"Argentina":{"base":12.939166666666667,"t50":12.08222222222222,"pct":-6.622871986432244},"India":{"base":6.078916666666667,"t50":10.783333333333333,"pct":77.38906329252744},"Bahrain":{"base":9.764166666666668,"t50":9.795555555555556,"pct":0.32147022844299933},"Rest":{"base":15.601083333333333,"t50":13.005555555555556,"pct":-16.636843239162513},"Total crude":{"base":299.4166666666667,"t50":224.66666666666666,"pct":-24.96521013080991}},"canada_share":{"base":74.97912607848593,"t50":62.41345202769536},"products":{"quarters":["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025","Q1 2026","Q2 2026"],"series":{"Crude":[303.7,313.3,297.7,285.7,357.0,249.0,188.3,211.7,274.0,215.7],"Semis":[97.3,113.0,100.2,97.6,108.2,97.4,89.5,105.0,140.7,158.3],"Scrap":[52.1,57.4,63.5,60.6,68.2,74.7,53.3,54.9,87.0,109.7]}},"product_change":{"Crude":{"base":299.4166666666667,"q2_26":215.66666666666666,"pct":-27.971054828833854},"Semis":{"base":104.5,"q2_26":158.33333333333334,"pct":51.515151515151516},"Scrap":{"base":60.041666666666664,"q2_26":109.66666666666667,"pct":82.65093684941014},"crude_share":{"base":64.53524921418949,"q2_26":44.58993797381116},"total":{"base":463.95833333333337,"q2_26":483.6666666666667}},"canada_exports":{"months":["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07"],"series":{"USA":[233.2,269.7,219.5,243.8,203.0,232.6,235.7,203.2,246.4,241.5,200.4,216.4,240.5,209.4,250.5,183.8,167.8,129.9,123.7,123.5,138.9,149.6,132.0,158.8,133.1,165.1,173.1,148.2,129.5,123.7,137.0],"Netherlands":[0.0,10.9,33.9,20.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,11.8,0.0,62.8,15.0,19.0,50.4,77.4,90.2,45.9,35.6,21.0,30.7,0.0,50.7,20.2,35.0],"Other":[2.2,2.4,7.7,6.7,9.3,6.7,40.1,8.5,11.1,9.6,6.3,10.9,7.4,6.0,7.5,4.7,27.4,11.7,0.7,44.7,45.2,3.2,2.2,17.7,6.8,5.8,7.8,25.4,58.4,20.8,12.4]}},"canada_x_change":{"us_share_base":93.59927915186306,"us_share_t50":71.4319702968158,"nl_base":4.490741666666666,"nl_t50":42.77768788888889},"data_through":{"premium":"2026-08","imports":"2026-06","canada":"2026-07"}};
 
 /* ---------- formatting ---------- */
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -334,9 +363,10 @@ const n0 = v => v == null ? "–" : nf0.format(Math.round(v)).replace("-", "−"
 const n1 = v => v == null ? "–" : v.toFixed(1).replace("-", "−");
 const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + nf0.format(Math.abs(Math.round(v)));
 const pct = v => sgn(v) + "%";
+const f2 = v => (Math.abs(v) < 0.005 ? 0 : v).toFixed(2).replace("-", "−");
 
 /* ---------- text filled from the data ---------- */
-const FS = D.forecast.stats, IR = D.implied_regimes, HR = D.hedge_regimes, OC = D.origin_change, PC = D.product_change, CX = D.canada_x_change;
+const FS = D.forecast.stats, IR = D.implied_regimes, RK = D.risk, OC = D.origin_change, PC = D.product_change, CX = D.canada_x_change;
 document.getElementById("asof").textContent =
   `Data through: premium ${fmtM(D.data_through.premium)} · US imports ${fmtM(D.data_through.imports)} · Canadian exports ${fmtM(D.data_through.canada)}. All figures recomputed from the repo's data files.`;
 
@@ -344,7 +374,7 @@ const KPIS = [
   { s: "Price", label: "Tariff rate implied by the premium", value: `${Math.round(IR.actual_25)}% → ${Math.round(IR.actual_50)}%`, ctx: "In the 25% and 50% regimes, Canada route. Matches the statutory rates: full pass-through." },
   { s: "Futures", label: "Tariff rate implied by the forward curve", value: `${Math.round(IR.fwd_50)}%`, unit: "vs 50% statutory", ctx: "M03 at month-end, Jul–Dec 2025. The curve priced relief." },
   { s: "Futures", label: "M03 forecast miss under 50%", value: `${sgn(FS.t50.mean_err)}`, unit: "$/t", ctx: `Too low in all ${FS.t50.n} of ${FS.t50.n} forecasts (t = ${FS.t50.t_nw.toFixed(1)}). Pre-tariff: ${sgn(FS.pre.mean_err)} $/t over ${FS.pre.n}.` },
-  { s: "Risk", label: "LME hedge ratio, US-delivered metal", value: `${HR.t50_all.ratio.toFixed(2)}`, unit: `vs ${HR.pre.ratio.toFixed(2)} before`, ctx: "Minimum-variance, monthly, HAC. Theory at 50%: 1.5." },
+  { s: "Risk", label: "LME exposure inside the premium", value: `${RK.cme_betas[2].beta.toFixed(2)}`, unit: `vs ${RK.fut_base.beta.toFixed(2)} before`, ctx: `$/t of premium per $/t of LME: CME Oct-26 on 10-day changes. Theory at 50%: t = 0.5.` },
   { s: "Flows", label: "US crude imports from Canada", value: pct(OC.Canada.pct), ctx: `${n0(OC.Canada.base)} → ${n0(OC.Canada.t50)} kt/month. Canada's share ${Math.round(D.canada_share.base)}% → ${Math.round(D.canada_share.t50)}%.` },
   { s: "Flows", label: "US share of Canada's unwrought exports", value: `${Math.round(CX.us_share_base)}% → ${Math.round(CX.us_share_t50)}%`, ctx: `Exports to the Netherlands rose from ~${Math.round(CX.nl_base)} to ~${Math.round(CX.nl_t50)} kt/month.` },
 ];
@@ -361,8 +391,19 @@ document.getElementById("t-err").innerHTML =
 const R = D.forecast.rule;
 document.getElementById("t-rule").innerHTML =
   `${R.signal.wins} of ${R.signal.n} trades profitable. In-sample, before costs and from a single regime: a hypothesis to re-test on CME data.`;
-document.getElementById("t-hedge").innerHTML =
-  `Estimated at <b>${HR.t50_all.ratio.toFixed(2)}</b> under 50% (s.e. ${HR.t50_all.se.toFixed(2)}) against ${HR.pre.ratio.toFixed(2)} before the tariff: above 1, below theory. The ratio also rose in the 2021 premium rally, so a tight market alone pushes it up.`;
+const RM = RK.monthly, RB = RK.cme_betas, RP = RK.policy, b10 = RB[2], b5 = RB[1];
+document.getElementById("t-cme").innerHTML =
+  `From June to September the contract <b>tracked half of every LME move</b>, apart from tariff news: on 20 Aug it fell <b>${n0(-RP.drop)} $/t</b> when a 25% rate for Canada was signalled, and recovered ${n0(RP.rise)} $/t when talks collapsed.`;
+document.getElementById("t-rmon").innerHTML =
+  `At 50% before Hormuz the MW β rose from <b>${f2(RM.pre.mw)} to ${f2(RM.t50.mw)}</b> while DP's fell to ${f2(RM.t50.dp)}: the rise is US-specific. After Hormuz both rose. Pooled, each point of tariff adds ${RK.pooled.c.toFixed(2)} points of β (s.e. ${RK.pooled.se.toFixed(2)}; theory 1), so only <b>about half the link</b> shows up month to month.`;
+document.getElementById("t-rcme").innerHTML =
+  `On 10-day changes β = <b>${b10.beta.toFixed(2)}</b> (95% CI ${(b10.beta - 1.96 * b10.se).toFixed(2)}–${(b10.beta + 1.96 * b10.se).toFixed(2)}), inside the theory band and above the pre-tariff ${RK.fut_base.beta.toFixed(2)}. Within a day it is only ${RB[0].beta.toFixed(2)}: the thin contract settles a few days behind LME.`;
+document.getElementById("t-h1").innerHTML =
+  `<b>A premium position is no longer LME-neutral.</b> LME + a fixed premium leaves about t = 0.5 t of LME per tonne in the premium leg, so US-delivered metal needs ~1.5 t of LME cover, not 1.`;
+document.getElementById("t-h2").innerHTML =
+  `<b>The overlay comes from the tariff rule, not a regression.</b> 0.5 t of LME per tonne cut the 10-day risk of an Oct-26 position from ${n0(b10.risk)} to ${n0(b10.risk_overlay)} $/t, and the 5-day risk from ${n0(b5.risk)} to ${n0(b5.risk_overlay)}. MW futures already carry it, so don't add it twice.`;
+document.getElementById("t-h3").innerHTML =
+  `<b>It can't hedge tariff news.</b> The 20 Aug move was ${Math.round(-RP.drop / RP.daily_sd)} times the usual daily move (${n0(RP.daily_sd)} $/t), and a cut to 25% halves the right overlay the same day. Tariff jumps need MW futures or contract terms.`;
 document.getElementById("t-ochg").innerHTML =
   `Total crude imports fell <b>${Math.round(-OC["Total crude"].pct)}%</b>. India (${pct(OC.India.pct)}) and the UAE (${pct(OC["United Arab Emirates"].pct)}) partly filled the gap.`;
 document.getElementById("t-cax").innerHTML =
@@ -379,6 +420,8 @@ function alpha(hex, a) {
   return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
 }
 function monthX(labels, scale, dateStr) {
+  const j = labels.indexOf(dateStr);   // daily charts label by date
+  if (j >= 0) return scale.getPixelForValue(j);
   const [y, m, d] = dateStr.split("-").map(Number);
   const i = labels.indexOf(`${y}-${String(m).padStart(2, "0")}`);
   if (i < 0) return null;
@@ -415,7 +458,7 @@ const refLines = {
     });
     (o.v || []).forEach(e => {
       const x = monthX(chart.data.labels, scales.x, e.date); if (x == null || x < A.left || x > A.right) return;
-      const right = x > A.right - 60;
+      const right = x + 4 + ctx.measureText(e.label).width > A.right;   // flip left when the label would not fit
       ctx.textAlign = right ? "right" : "left"; ctx.textBaseline = "top";
       put(e.label, x + (right ? -4 : 4), A.top + 2 + (e.row || 0) * 13);
     });
@@ -457,7 +500,22 @@ const whiskers = {
     });
   }
 };
-Chart.register(refLines, tipLabels, whiskers);
+// Shaded rectangles in data coordinates (theory bands on the dot plots)
+const bands = {
+  id: "bands",
+  beforeDatasetsDraw(chart, _a, o) {
+    if (!o.items) return;
+    const { ctx, chartArea: A, scales } = chart;
+    ctx.save(); ctx.fillStyle = alpha(tok("--s-blue"), .14);
+    o.items.forEach(b => {
+      const x0 = Math.max(scales.x.getPixelForValue(b.x0), A.left), x1 = Math.min(scales.x.getPixelForValue(b.x1), A.right);
+      const y0 = scales.y.getPixelForValue(b.y1), y1 = scales.y.getPixelForValue(b.y0);
+      ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+    });
+    ctx.restore();
+  }
+};
+Chart.register(refLines, tipLabels, whiskers, bands);
 
 const charts = {};
 const TABLES = {};
@@ -546,7 +604,7 @@ function build() {
 
   /* 2b. forecast errors by regime */
   const WC = { pre: C.neutral, t50: C.blue, hormuz: C.yellow, spans: C.faint };
-  const WL = { pre: "Pre-tariff", t50: "50%, before Hormuz", hormuz: "50% + Hormuz", spans: "Spans a tariff step (excluded)" };
+  const WL = { pre: "Pre-tariff", t50: "50%, before Hormuz", hormuz: "50% + Hormuz", spans: "Spans a tariff step or Hormuz (excluded)" };
   make("c-err", { type: "bar", data: { labels: F.months, datasets: [
     { label: "Realised − M03", data: F.err, backgroundColor: F.window.map(w => WC[w]), borderRadius: 3, borderSkipped: "start", maxBarThickness: 24 },
   ] }, options: merge(baseOpts(), { plugins: {
@@ -583,37 +641,51 @@ function build() {
     scales: { y: { max: 0, grace: "15%" }, x: { position: "top", ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
   () => ({ head: ["", "$/t"], rows: [["Canada parity at 50%, Aug 26", n0(A.parity50)], ["Canada parity at 25%, Aug 26", n0(A.parity25)], ["Modelled drop", n0(-A.parity_drop)], ["CME deferred contracts (reported)", "≈ −270"]] }));
 
-  /* 3a. rolling hedge ratio */
-  const H = D.hedge_roll;
-  make("c-hedge", { data: { labels: H.months, datasets: [
-    line("Theory at Canada parity: 1 + t", H.theory, C.ink2, { borderWidth: 1.5, borderDash: [5, 4], stepped: "middle" }),
-    line("Estimated hedge ratio, rolling 12 months", H.ratio, C.blue),
-  ] }, options: merge(baseOpts(), { plugins: { refLines: { h: [{ y: 1, label: "1:1 hedge" }], v: EV_TARIFF },
-      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw?.toFixed(2)}` } } },
-    scales: { y: { min: 0.6, max: 2.0, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } } } }) });
+  /* 3a. CME Oct-26 against half of LME 3M */
+  const CP = RK.cme_path;
+  const fmtD = d => { const [y, m, dd] = d.split("-"); return `${+dd} ${MON[+m - 1]}`; };
+  make("c-cme", { data: { labels: CP.dates, datasets: [
+    line("CME Oct-26 MW premium futures", CP.fut, C.blue),
+    line("0.5 × LME 3M (the duty link alone)", CP.half_lme, C.orange),
+  ] }, options: merge(baseOpts(), { plugins: {
+      refLines: { h: [{ y: 0, strong: true }], v: [{ date: "2026-08-20", label: "20 Aug: Canada cut signalled" }, { date: "2026-08-24", label: "24 Aug: talks fail", row: 1 }] },
+      tooltip: { callbacks: { title: it => fmtD(it[0].label), label: c => ` ${c.dataset.label}: ${sgn(c.raw)} $/t` } } },
+    scales: { x: { ticks: { maxTicksLimit: 8, callback(v) { return fmtD(this.getLabelForValue(v)); } } },
+      y: { title: { display: true, text: "$/t since 1 Jun", color: C.ink2 } } } }) },
+  () => ({ head: ["Date", "Oct-26 futures", "0.5 × LME 3M"], rows: CP.dates.map((d, i) => [fmtD(d), CP.fut[i], CP.half_lme[i]]) }));
 
-  /* 3b. residual risk */
-  const rk = ["pre", "t50_pre_hormuz", "hormuz", "t50_all"], rl = { pre: ["Pre-tariff"], t50_pre_hormuz: ["50%, before", "Hormuz"], hormuz: ["50% +", "Hormuz"], t50_all: ["50%, all"] };
-  make("c-resid", { type: "bar", data: { labels: rk.map(k => rl[k]), datasets: [
-    { label: "1:1 LME hedge", data: rk.map(k => HR[k].resid_1to1), backgroundColor: C.neutral },
-    { label: "Minimum-variance hedge", data: rk.map(k => HR[k].resid_opt), backgroundColor: C.blue },
-  ].map(d => ({ ...d, borderRadius: 3, borderSkipped: "start", maxBarThickness: 18, borderColor: C.surface, borderWidth: { left: 1, right: 1 } })) },
-  options: merge(baseOpts(), { plugins: { tipLabels: { fmt: v => n0(v) }, tooltip: { callbacks: { title: it => it[0].label.replace(",", " "), label: c => ` ${c.dataset.label}: ${n0(c.raw)} $/t` } } },
-    scales: { y: { grace: "12%" }, x: { ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
-  () => ({ head: ["Regime", "Months", "Hedge ratio", "s.e.", "Residual, 1:1", "Residual, optimal"], rows: rk.map(k => [rl[k].join(" "), HR[k].months, HR[k].ratio.toFixed(2), HR[k].se.toFixed(2), n0(HR[k].resid_1to1), n0(HR[k].resid_opt)]) }));
+  const dot = (label, pts, col) => ({ type: "scatter", label, data: pts.map(p => ({ x: p.x, y: p.b })), ci: pts.map(p => [p.b - 1.96 * p.se, p.b + 1.96 * p.se]),
+    se: pts.map(p => p.se), borderColor: col, backgroundColor: col, pointRadius: 5, pointHoverRadius: 6, pointBorderColor: C.surface, pointBorderWidth: 2 });
+  const bandKey = { type: "scatter", label: "Theory at 50%: t to t + pre-tariff β", data: [], backgroundColor: alpha(C.blue, .25), borderColor: alpha(C.blue, .25) };
+  const dotTip = names => ({ title: it => names[Math.round(it[0].raw.x)], label: c => { const b = c.raw.y, se = c.dataset.se[c.dataIndex];
+    return ` ${c.dataset.label}: β ${b.toFixed(2)} (95% CI ${(b - 1.96 * se).toFixed(2)} to ${(b + 1.96 * se).toFixed(2)})`; } });
+  const yBeta = { min: -0.1, max: 1.0, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } };
+  const hi = RK.t + RK.beta_pre;
 
-  /* 3c. weekly betas */
-  const B = D.betas, BR = [["pre", "Pre-tariff", C.neutral, -0.18], ["t50", "50%, before Hormuz", C.blue, 0], ["hormuz", "50% + Hormuz", C.yellow, 0.18]];
-  const HZ = [1, 2, 4, 8];
-  make("c-beta", { type: "scatter", data: { datasets: BR.map(([k, lab, col, off]) => ({
-    label: lab, data: B[k].map((b, i) => ({ x: i + 1 + off, y: b.beta })), ci: B[k].map(b => [b.beta - 1.96 * b.se, b.beta + 1.96 * b.se]),
-    borderColor: col, backgroundColor: col, pointRadius: 5, pointHoverRadius: 6, pointBorderColor: C.surface, pointBorderWidth: 2 })) },
-  options: merge(baseOpts({ interaction: { mode: "nearest", intersect: false, axis: "x" } }), {
-    plugins: { refLines: { h: [{ y: 0, strong: true }, { y: 0.5, dash: true, label: "theory at 50%: β = t = 0.5" }] },
-      tooltip: { callbacks: { title: it => `${HZ[Math.round(it[0].raw.x) - 1]}-week change`, label: c => { const b = B[BR[c.datasetIndex][0]][c.dataIndex]; return ` ${c.dataset.label}: β ${b.beta.toFixed(2)} (95% CI ${(b.beta - 1.96 * b.se).toFixed(2)} to ${(b.beta + 1.96 * b.se).toFixed(2)})`; } } } },
-    scales: { x: { type: "linear", min: 0.5, max: 4.5, ticks: { stepSize: 1, callback: v => Number.isInteger(v) && v >= 1 && v <= 4 ? `${HZ[v - 1]} wk` : "" } },
-      y: { min: -0.6, max: 1.4, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } } } }) },
-  () => ({ head: ["Regime", "Horizon", "β", "s.e."], rows: BR.flatMap(([k, lab]) => B[k].map(b => [lab, `${b.h} wk`, b.beta.toFixed(2), b.se.toFixed(2)])) }));
+  /* 3b. monthly betas by regime */
+  const MK = ["pre", "t50", "hormuz"], ML = ["", "Pre-tariff", "50%, before Hormuz", "50% + Hormuz"];
+  make("c-rmon", { type: "scatter", data: { datasets: [
+    dot("MW premium", MK.map((k, i) => ({ x: i + 1 - 0.1, b: RM[k].mw, se: RM[k].mw_se })), C.blue),
+    dot("Rotterdam DP (control)", MK.map((k, i) => ({ x: i + 1 + 0.1, b: RM[k].dp, se: RM[k].dp_se })), C.aqua),
+    bandKey,
+  ] }, options: merge(baseOpts({ interaction: { mode: "nearest", intersect: false, axis: "x" } }), {
+    plugins: { refLines: { h: [{ y: 0, strong: true }] }, bands: { items: [{ x0: 1.6, x1: 2.4, y0: RK.t, y1: hi }, { x0: 2.6, x1: 3.4, y0: RK.t, y1: hi }] },
+      tooltip: { callbacks: dotTip(ML) } },
+    scales: { x: { type: "linear", min: 0.5, max: 3.5, afterBuildTicks: ax => { ax.ticks = [1, 2, 3].map(value => ({ value })); }, ticks: { autoSkip: false, callback: v => Number.isInteger(v) && v >= 1 && v <= 3 ? [ML[v], `${RM[MK[v - 1]].months} months`] : "" } }, y: yBeta } }) },
+  () => ({ head: ["Regime", "Months", "β MW", "s.e.", "β DP", "s.e.", "Theory MW"], rows: MK.map((k, i) => [ML[i + 1], RM[k].months, RM[k].mw.toFixed(2), RM[k].mw_se.toFixed(2), RM[k].dp.toFixed(2), RM[k].dp_se.toFixed(2), RM[k].t ? `${RK.t.toFixed(2)}–${hi.toFixed(2)}` : "–"]) }));
+
+  /* 3c. CME betas by horizon, against the pre-tariff futures baseline */
+  const CL = ["Pre-tariff, monthly", "1 day", "5 days", "10 days"];
+  make("c-rcme", { type: "scatter", data: { datasets: [
+    dot("Pre-tariff: LME MW futures", [{ x: 0, b: RK.fut_base.beta, se: RK.fut_base.se }], C.neutral),
+    dot("Under 50%: CME Oct-26", RB.map((b, i) => ({ x: i + 1, b: b.beta, se: b.se })), C.blue),
+    bandKey,
+  ] }, options: merge(baseOpts({ interaction: { mode: "nearest", intersect: false, axis: "x" } }), {
+    plugins: { refLines: { h: [{ y: 0, strong: true }, { y: RK.fut_base.beta, dash: true }] }, bands: { items: [{ x0: 0.6, x1: 3.5, y0: RK.t, y1: hi }] },
+      tooltip: { callbacks: dotTip(CL) } },
+    scales: { x: { type: "linear", min: -0.5, max: 3.5, afterBuildTicks: ax => { ax.ticks = [0, 1, 2, 3].map(value => ({ value })); }, ticks: { autoSkip: false, callback: v => Number.isInteger(v) && v >= 0 && v <= 3 ? [CL[v], `${v ? RB[v - 1].n : RK.fut_base.n} changes`] : "" } }, y: yBeta } }) },
+  () => ({ head: ["Change over", "Changes", "β", "s.e.", "R²", "Risk $/t", "With 0.5 t LME"], rows: [[CL[0], RK.fut_base.n, RK.fut_base.beta.toFixed(2), RK.fut_base.se.toFixed(2), "–", "–", "–"],
+    ...RB.map((b, i) => [CL[i + 1], b.n, b.beta.toFixed(2), b.se.toFixed(2), b.r2.toFixed(2), n0(b.risk), n0(b.risk_overlay)])] }));
 
   /* 4a. US crude imports by origin */
   const O = D.flows_origin, OCOL = { "Canada": C.blue, "United Arab Emirates": C.orange, "Argentina": C.aqua, "India": C.yellow, "Bahrain": C.magenta, "Rest": C.neutral };

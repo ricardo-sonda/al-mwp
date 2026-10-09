@@ -114,6 +114,14 @@ details.data summary:focus-visible, a:focus-visible { outline: 2px solid var(--a
 .tbl th:first-child, .tbl td:first-child { text-align: left; }
 .tbl thead th { position: sticky; top: 0; background: var(--surface); color: var(--ink-2); font-weight: 500; }
 
+svg.dag { width: 100%; height: auto; max-height: 300px; }
+svg.dag .node rect { fill: var(--bg); stroke: var(--rule); stroke-width: 1; }
+svg.dag .node text { font: 500 11px var(--f-body); fill: var(--ink); text-anchor: middle; }
+svg.dag .edge line { stroke: var(--s-neutral); stroke-width: 1.4; marker-end: url(#ah); }
+svg.dag .edge-new { stroke: var(--s-orange); stroke-width: 2.6; marker-end: url(#ah-o); }
+svg.dag .elab { font: 500 11px var(--f-data); fill: var(--ink-2); }
+svg.dag .elab.new { font-weight: 600; fill: var(--ink); }
+
 /* Caveats */
 .caveats { margin-top: 56px; border-top: 1px solid var(--rule); padding-top: 24px; display: grid; gap: 16px; }
 .caveats h2 { font-size: 20px; font-weight: 600; }
@@ -147,7 +155,7 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <h1>Has the Midwest premium priced in the Section 232 tariffs?</h1>
     <p class="answer"><strong>The physical premium did, in full. The futures curve did not.</strong>
       Import parity explains the premium at the statutory 25% and 50% rates, while the forward curve kept pricing a relief that never came.
-      The tariff also raised the LME hedge ratio of US-delivered metal above 1 and pushed Canadian metal toward Europe.</p>
+      The tariff also tied the premium directly to LME, so premium positions now carry LME risk, and it pushed Canadian metal toward Europe.</p>
     <a class="repo" href="https://github.com/ricardo-sonda/al-mwp"><span>Full repo here:</span> github.com/ricardo-sonda/al-mwp →</a>
     <p class="meta" id="asof"></p>
   </header>
@@ -237,32 +245,53 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
   <section class="strand" id="risk">
     <div class="strand-head">
       <span class="strand-no">3</span>
-      <h2>Risk: a 1:1 LME hedge is too small under an ad valorem tariff</h2>
-      <p>A tariff charged on value makes the parity premium move with LME: ∂MWP/∂LME = t. A tonne of US-delivered metal then moves like 1 + t tonnes of LME, so at 50% theory says 1.5.</p>
+      <h2>Risk: the tariff ties the premium to LME</h2>
+      <p>Before the tariff, LME and the premium moved together only through common causes. A duty charged on value adds a direct link: at import parity the premium contains t × (LME + DP − freight), so ∂MWP/∂LME = t. At 50%, every 100 $/t on LME should add about 50 $/t to the premium, and the rise should be specific to the US.</p>
     </div>
     <div class="grid three">
       <figure class="panel span2">
-        <figcaption><h3>Minimum-variance LME hedge ratio for the all-in Midwest price</h3><p class="sub">Tonnes of LME per tonne of US-delivered metal, rolling 12 months of monthly changes.</p></figcaption>
-        <div class="cw"><canvas id="c-hedge" role="img" aria-label="Line chart of the rolling hedge ratio against the theoretical 1 plus t"></canvas></div>
-        <p class="take" id="t-hedge"></p>
-        <details class="data" data-chart="c-hedge"><summary>Data table</summary><div class="tbl"></div></details>
+        <figcaption><h3>CME Oct-26 MW futures against half of LME 3M</h3><p class="sub">Change since 1 Jun 2026, $/t, daily settlements. 0.5 × LME 3M is the duty link alone at t = 50%.</p></figcaption>
+        <div class="cw"><canvas id="c-cme" role="img" aria-label="Line chart of the CME Oct-26 MW premium futures and half of LME 3M, June to September 2026"></canvas></div>
+        <p class="take" id="t-cme"></p>
+        <details class="data" data-chart="c-cme"><summary>Data table</summary><div class="tbl"></div></details>
       </figure>
       <figure class="panel">
-        <figcaption><h3>Residual risk after hedging</h3><p class="sub">Std. dev. of monthly changes, $/t.</p></figcaption>
-        <div class="cw"><canvas id="c-resid" role="img" aria-label="Grouped bar chart of residual risk by regime and hedge"></canvas></div>
-        <p class="take">With a 1:1 hedge, risk rose <b>from 50 to 90 $/t</b>. The 90 includes the Gulf shock.</p>
-        <details class="data" data-chart="c-resid"><summary>Data table</summary><div class="tbl"></div></details>
-      </figure>
-      <figure class="panel span2">
-        <figcaption><h3>How much of an LME move the MW futures curve picks up</h3><p class="sub">β of a fixed MW futures contract on LME 3M over the same window, weekly data, with 95% intervals (HAC).</p></figcaption>
-        <div class="cw"><canvas id="c-beta" role="img" aria-label="Dot plot of weekly betas by horizon and regime with confidence intervals"></canvas></div>
-        <details class="data" data-chart="c-beta"><summary>Data table</summary><div class="tbl"></div></details>
+        <figcaption><h3>What the tariff changed</h3><p class="sub">Causal links into the Midwest premium. The orange arrow is new.</p></figcaption>
+        <svg class="dag" viewBox="0 0 360 252" role="img" aria-label="Diagram: global supply and demand drives LME, the European premium and US supply and demand; the premium depends on the European premium (times 1 plus t), US supply and demand, and, under the tariff, directly on LME (times t)">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--s-neutral)"/></marker>
+            <marker id="ah-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--s-orange)"/></marker>
+          </defs>
+          <g class="edge"><line x1="152" y1="50" x2="82" y2="103"/><line x1="180" y1="50" x2="180" y2="103"/><line x1="208" y1="50" x2="278" y2="103"/>
+            <line x1="180" y1="146" x2="180" y2="203"/><line x1="282" y1="146" x2="214" y2="203"/></g>
+          <line class="edge-new" x1="78" y1="146" x2="144" y2="203"/>
+          <text class="elab" x="174" y="170" text-anchor="end">× (1 + t)</text>
+          <text class="elab new" x="98" y="190" text-anchor="end">× t</text>
+          <g class="node"><rect x="122" y="10" width="116" height="40" rx="6"/><text x="180" y="27">Global supply</text><text x="180" y="41">and demand</text></g>
+          <g class="node"><rect x="4" y="106" width="108" height="40" rx="6"/><text x="58" y="130">LME price</text></g>
+          <g class="node"><rect x="122" y="106" width="116" height="40" rx="6"/><text x="180" y="123">European premium</text><text x="180" y="137">(Rotterdam DP)</text></g>
+          <g class="node"><rect x="248" y="106" width="108" height="40" rx="6"/><text x="302" y="123">US supply</text><text x="302" y="137">and demand</text></g>
+          <g class="node"><rect x="122" y="206" width="116" height="40" rx="6"/><text x="180" y="230">Midwest premium</text></g>
+        </svg>
+        <p class="take">Before the tariff there was <b>no direct arrow</b>: the premium's LME beta was a statistical estimate. A duty on value adds one of size <b>t</b>, set by the tariff rule for as long as the premium sits at import parity.</p>
       </figure>
       <figure class="panel">
-        <figcaption><h3>What this means for a hedger</h3><p class="sub">From the weekly and lead–lag regressions.</p></figcaption>
-        <p class="take" style="border-top:0;padding-top:0">The curve reacts to LME <b>one to two months late</b>. The beta is ~0 at one week and reaches 0.7 at eight weeks under 50%, close to t = 0.5.</p>
-        <p class="take">This week's LME move <b>predicts the next four weeks</b> of futures moves, even holding those weeks' LME moves fixed. A daily delta understates the premium's LME exposure.</p>
-        <p class="take">The LME MW settlements are often stale, so these weekly tests should be re-run on CME AUP data.</p>
+        <figcaption><h3>Monthly: premium β on LME by regime</h3><p class="sub">Slope of Δ premium on Δ LME cash, monthly averages, 95% intervals (HAC). Rotterdam DP is the control: no US tariff.</p></figcaption>
+        <div class="cw"><canvas id="c-rmon" role="img" aria-label="Dot plot of the MW premium and Rotterdam DP betas on LME by regime, with confidence intervals and the theory band"></canvas></div>
+        <p class="take" id="t-rmon"></p>
+        <details class="data" data-chart="c-rmon"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>Futures: CME Oct-26 β on LME 3M</h3><p class="sub">Over 1-, 5- and 10-day changes, Jun–Sep 2026, tariff-news days left out. Grey: pre-tariff baseline from the LME MW contract, monthly changes.</p></figcaption>
+        <div class="cw"><canvas id="c-rcme" role="img" aria-label="Dot plot of the CME Oct-26 beta on LME 3M by horizon against the pre-tariff baseline and the theory band"></canvas></div>
+        <p class="take" id="t-rcme"></p>
+        <details class="data" data-chart="c-rcme"><summary>Data table</summary><div class="tbl"></div></details>
+      </figure>
+      <figure class="panel">
+        <figcaption><h3>What this means for a hedger</h3><p class="sub">From the CME Oct-26 contract, Jun–Sep 2026.</p></figcaption>
+        <p class="take" style="border-top:0;padding-top:0" id="t-h1"></p>
+        <p class="take" id="t-h2"></p>
+        <p class="take" id="t-h3"></p>
       </figure>
     </div>
   </section>
@@ -306,8 +335,8 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <ul class="cav-list">
       <li><b>Freight is an assumption.</b> No free series exists, so every parity result carries a low–high band. Before 2025 the Canada route sat 80–180 $/t above parity at a 0% tariff, so small gaps are not arbitrage.</li>
       <li><b>Hormuz is a separate shock.</b> The Strait closed on 2 Mar 2026 and drove the jump in Rotterdam premiums and the fall in Gulf imports. Tariff attribution uses months up to Feb 2026.</li>
-      <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half the CME size. Stale quotes are flagged in every test.</li>
-      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime. The trading rule is in-sample and before costs.</li>
+      <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half the CME size. Stale quotes are flagged in every test, and the risk test uses CME settlements.</li>
+      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime. The trading rule is in-sample and before costs. The CME risk test is one contract over 80 trading days, with only about 8 independent 10-day windows.</li>
       <li><b>Rotterdam duty-unpaid after Oct 2025 is reconstructed</b> from duty-paid at an effective EU duty of 2.7% (backtest error ±13 $/t). The Canada route uses duty-paid, which is observed.</li>
       <li><b>Aug 2026 is not fully fixed.</b> The last premium is M01 on 28 Aug. The CME move is from press reports, not settlement data.</li>
     </ul>
@@ -328,9 +357,10 @@ const n0 = v => v == null ? "–" : nf0.format(Math.round(v)).replace("-", "−"
 const n1 = v => v == null ? "–" : v.toFixed(1).replace("-", "−");
 const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + nf0.format(Math.abs(Math.round(v)));
 const pct = v => sgn(v) + "%";
+const f2 = v => (Math.abs(v) < 0.005 ? 0 : v).toFixed(2).replace("-", "−");
 
 /* ---------- text filled from the data ---------- */
-const FS = D.forecast.stats, IR = D.implied_regimes, HR = D.hedge_regimes, OC = D.origin_change, PC = D.product_change, CX = D.canada_x_change;
+const FS = D.forecast.stats, IR = D.implied_regimes, RK = D.risk, OC = D.origin_change, PC = D.product_change, CX = D.canada_x_change;
 document.getElementById("asof").textContent =
   `Data through: premium ${fmtM(D.data_through.premium)} · US imports ${fmtM(D.data_through.imports)} · Canadian exports ${fmtM(D.data_through.canada)}. All figures recomputed from the repo's data files.`;
 
@@ -338,7 +368,7 @@ const KPIS = [
   { s: "Price", label: "Tariff rate implied by the premium", value: `${Math.round(IR.actual_25)}% → ${Math.round(IR.actual_50)}%`, ctx: "In the 25% and 50% regimes, Canada route. Matches the statutory rates: full pass-through." },
   { s: "Futures", label: "Tariff rate implied by the forward curve", value: `${Math.round(IR.fwd_50)}%`, unit: "vs 50% statutory", ctx: "M03 at month-end, Jul–Dec 2025. The curve priced relief." },
   { s: "Futures", label: "M03 forecast miss under 50%", value: `${sgn(FS.t50.mean_err)}`, unit: "$/t", ctx: `Too low in all ${FS.t50.n} of ${FS.t50.n} forecasts (t = ${FS.t50.t_nw.toFixed(1)}). Pre-tariff: ${sgn(FS.pre.mean_err)} $/t over ${FS.pre.n}.` },
-  { s: "Risk", label: "LME hedge ratio, US-delivered metal", value: `${HR.t50_all.ratio.toFixed(2)}`, unit: `vs ${HR.pre.ratio.toFixed(2)} before`, ctx: "Minimum-variance, monthly, HAC. Theory at 50%: 1.5." },
+  { s: "Risk", label: "LME exposure inside the premium", value: `${RK.cme_betas[2].beta.toFixed(2)}`, unit: `vs ${RK.fut_base.beta.toFixed(2)} before`, ctx: `$/t of premium per $/t of LME: CME Oct-26 on 10-day changes. Theory at 50%: t = 0.5.` },
   { s: "Flows", label: "US crude imports from Canada", value: pct(OC.Canada.pct), ctx: `${n0(OC.Canada.base)} → ${n0(OC.Canada.t50)} kt/month. Canada's share ${Math.round(D.canada_share.base)}% → ${Math.round(D.canada_share.t50)}%.` },
   { s: "Flows", label: "US share of Canada's unwrought exports", value: `${Math.round(CX.us_share_base)}% → ${Math.round(CX.us_share_t50)}%`, ctx: `Exports to the Netherlands rose from ~${Math.round(CX.nl_base)} to ~${Math.round(CX.nl_t50)} kt/month.` },
 ];
@@ -355,8 +385,19 @@ document.getElementById("t-err").innerHTML =
 const R = D.forecast.rule;
 document.getElementById("t-rule").innerHTML =
   `${R.signal.wins} of ${R.signal.n} trades profitable. In-sample, before costs and from a single regime: a hypothesis to re-test on CME data.`;
-document.getElementById("t-hedge").innerHTML =
-  `Estimated at <b>${HR.t50_all.ratio.toFixed(2)}</b> under 50% (s.e. ${HR.t50_all.se.toFixed(2)}) against ${HR.pre.ratio.toFixed(2)} before the tariff: above 1, below theory. The ratio also rose in the 2021 premium rally, so a tight market alone pushes it up.`;
+const RM = RK.monthly, RB = RK.cme_betas, RP = RK.policy, b10 = RB[2], b5 = RB[1];
+document.getElementById("t-cme").innerHTML =
+  `From June to September the contract <b>tracked half of every LME move</b>, apart from tariff news: on 20 Aug it fell <b>${n0(-RP.drop)} $/t</b> when a 25% rate for Canada was signalled, and recovered ${n0(RP.rise)} $/t when talks collapsed.`;
+document.getElementById("t-rmon").innerHTML =
+  `At 50% before Hormuz the MW β rose from <b>${f2(RM.pre.mw)} to ${f2(RM.t50.mw)}</b> while DP's fell to ${f2(RM.t50.dp)}: the rise is US-specific. After Hormuz both rose. Pooled, each point of tariff adds ${RK.pooled.c.toFixed(2)} points of β (s.e. ${RK.pooled.se.toFixed(2)}; theory 1), so only <b>about half the link</b> shows up month to month.`;
+document.getElementById("t-rcme").innerHTML =
+  `On 10-day changes β = <b>${b10.beta.toFixed(2)}</b> (95% CI ${(b10.beta - 1.96 * b10.se).toFixed(2)}–${(b10.beta + 1.96 * b10.se).toFixed(2)}), inside the theory band and above the pre-tariff ${RK.fut_base.beta.toFixed(2)}. Within a day it is only ${RB[0].beta.toFixed(2)}: the thin contract settles a few days behind LME.`;
+document.getElementById("t-h1").innerHTML =
+  `<b>A premium position is no longer LME-neutral.</b> LME + a fixed premium leaves about t = 0.5 t of LME per tonne in the premium leg, so US-delivered metal needs ~1.5 t of LME cover, not 1.`;
+document.getElementById("t-h2").innerHTML =
+  `<b>The overlay comes from the tariff rule, not a regression.</b> 0.5 t of LME per tonne cut the 10-day risk of an Oct-26 position from ${n0(b10.risk)} to ${n0(b10.risk_overlay)} $/t, and the 5-day risk from ${n0(b5.risk)} to ${n0(b5.risk_overlay)}. MW futures already carry it, so don't add it twice.`;
+document.getElementById("t-h3").innerHTML =
+  `<b>It can't hedge tariff news.</b> The 20 Aug move was ${Math.round(-RP.drop / RP.daily_sd)} times the usual daily move (${n0(RP.daily_sd)} $/t), and a cut to 25% halves the right overlay the same day. Tariff jumps need MW futures or contract terms.`;
 document.getElementById("t-ochg").innerHTML =
   `Total crude imports fell <b>${Math.round(-OC["Total crude"].pct)}%</b>. India (${pct(OC.India.pct)}) and the UAE (${pct(OC["United Arab Emirates"].pct)}) partly filled the gap.`;
 document.getElementById("t-cax").innerHTML =
@@ -373,6 +414,8 @@ function alpha(hex, a) {
   return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
 }
 function monthX(labels, scale, dateStr) {
+  const j = labels.indexOf(dateStr);   // daily charts label by date
+  if (j >= 0) return scale.getPixelForValue(j);
   const [y, m, d] = dateStr.split("-").map(Number);
   const i = labels.indexOf(`${y}-${String(m).padStart(2, "0")}`);
   if (i < 0) return null;
@@ -409,7 +452,7 @@ const refLines = {
     });
     (o.v || []).forEach(e => {
       const x = monthX(chart.data.labels, scales.x, e.date); if (x == null || x < A.left || x > A.right) return;
-      const right = x > A.right - 60;
+      const right = x + 4 + ctx.measureText(e.label).width > A.right;   // flip left when the label would not fit
       ctx.textAlign = right ? "right" : "left"; ctx.textBaseline = "top";
       put(e.label, x + (right ? -4 : 4), A.top + 2 + (e.row || 0) * 13);
     });
@@ -451,7 +494,22 @@ const whiskers = {
     });
   }
 };
-Chart.register(refLines, tipLabels, whiskers);
+// Shaded rectangles in data coordinates (theory bands on the dot plots)
+const bands = {
+  id: "bands",
+  beforeDatasetsDraw(chart, _a, o) {
+    if (!o.items) return;
+    const { ctx, chartArea: A, scales } = chart;
+    ctx.save(); ctx.fillStyle = alpha(tok("--s-blue"), .14);
+    o.items.forEach(b => {
+      const x0 = Math.max(scales.x.getPixelForValue(b.x0), A.left), x1 = Math.min(scales.x.getPixelForValue(b.x1), A.right);
+      const y0 = scales.y.getPixelForValue(b.y1), y1 = scales.y.getPixelForValue(b.y0);
+      ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+    });
+    ctx.restore();
+  }
+};
+Chart.register(refLines, tipLabels, whiskers, bands);
 
 const charts = {};
 const TABLES = {};
@@ -577,37 +635,51 @@ function build() {
     scales: { y: { max: 0, grace: "15%" }, x: { position: "top", ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
   () => ({ head: ["", "$/t"], rows: [["Canada parity at 50%, Aug 26", n0(A.parity50)], ["Canada parity at 25%, Aug 26", n0(A.parity25)], ["Modelled drop", n0(-A.parity_drop)], ["CME deferred contracts (reported)", "≈ −270"]] }));
 
-  /* 3a. rolling hedge ratio */
-  const H = D.hedge_roll;
-  make("c-hedge", { data: { labels: H.months, datasets: [
-    line("Theory at Canada parity: 1 + t", H.theory, C.ink2, { borderWidth: 1.5, borderDash: [5, 4], stepped: "middle" }),
-    line("Estimated hedge ratio, rolling 12 months", H.ratio, C.blue),
-  ] }, options: merge(baseOpts(), { plugins: { refLines: { h: [{ y: 1, label: "1:1 hedge" }], v: EV_TARIFF },
-      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw?.toFixed(2)}` } } },
-    scales: { y: { min: 0.6, max: 2.0, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } } } }) });
+  /* 3a. CME Oct-26 against half of LME 3M */
+  const CP = RK.cme_path;
+  const fmtD = d => { const [y, m, dd] = d.split("-"); return `${+dd} ${MON[+m - 1]}`; };
+  make("c-cme", { data: { labels: CP.dates, datasets: [
+    line("CME Oct-26 MW premium futures", CP.fut, C.blue),
+    line("0.5 × LME 3M (the duty link alone)", CP.half_lme, C.orange),
+  ] }, options: merge(baseOpts(), { plugins: {
+      refLines: { h: [{ y: 0, strong: true }], v: [{ date: "2026-08-20", label: "20 Aug: Canada cut signalled" }, { date: "2026-08-24", label: "24 Aug: talks fail", row: 1 }] },
+      tooltip: { callbacks: { title: it => fmtD(it[0].label), label: c => ` ${c.dataset.label}: ${sgn(c.raw)} $/t` } } },
+    scales: { x: { ticks: { maxTicksLimit: 8, callback(v) { return fmtD(this.getLabelForValue(v)); } } },
+      y: { title: { display: true, text: "$/t since 1 Jun", color: C.ink2 } } } }) },
+  () => ({ head: ["Date", "Oct-26 futures", "0.5 × LME 3M"], rows: CP.dates.map((d, i) => [fmtD(d), CP.fut[i], CP.half_lme[i]]) }));
 
-  /* 3b. residual risk */
-  const rk = ["pre", "t50_pre_hormuz", "hormuz", "t50_all"], rl = { pre: ["Pre-tariff"], t50_pre_hormuz: ["50%, before", "Hormuz"], hormuz: ["50% +", "Hormuz"], t50_all: ["50%, all"] };
-  make("c-resid", { type: "bar", data: { labels: rk.map(k => rl[k]), datasets: [
-    { label: "1:1 LME hedge", data: rk.map(k => HR[k].resid_1to1), backgroundColor: C.neutral },
-    { label: "Minimum-variance hedge", data: rk.map(k => HR[k].resid_opt), backgroundColor: C.blue },
-  ].map(d => ({ ...d, borderRadius: 3, borderSkipped: "start", maxBarThickness: 18, borderColor: C.surface, borderWidth: { left: 1, right: 1 } })) },
-  options: merge(baseOpts(), { plugins: { tipLabels: { fmt: v => n0(v) }, tooltip: { callbacks: { title: it => it[0].label.replace(",", " "), label: c => ` ${c.dataset.label}: ${n0(c.raw)} $/t` } } },
-    scales: { y: { grace: "12%" }, x: { ticks: { callback(v) { return this.getLabelForValue(v); } } } } }) },
-  () => ({ head: ["Regime", "Months", "Hedge ratio", "s.e.", "Residual, 1:1", "Residual, optimal"], rows: rk.map(k => [rl[k].join(" "), HR[k].months, HR[k].ratio.toFixed(2), HR[k].se.toFixed(2), n0(HR[k].resid_1to1), n0(HR[k].resid_opt)]) }));
+  const dot = (label, pts, col) => ({ type: "scatter", label, data: pts.map(p => ({ x: p.x, y: p.b })), ci: pts.map(p => [p.b - 1.96 * p.se, p.b + 1.96 * p.se]),
+    se: pts.map(p => p.se), borderColor: col, backgroundColor: col, pointRadius: 5, pointHoverRadius: 6, pointBorderColor: C.surface, pointBorderWidth: 2 });
+  const bandKey = { type: "scatter", label: "Theory at 50%: t to t + pre-tariff β", data: [], backgroundColor: alpha(C.blue, .25), borderColor: alpha(C.blue, .25) };
+  const dotTip = names => ({ title: it => names[Math.round(it[0].raw.x)], label: c => { const b = c.raw.y, se = c.dataset.se[c.dataIndex];
+    return ` ${c.dataset.label}: β ${b.toFixed(2)} (95% CI ${(b - 1.96 * se).toFixed(2)} to ${(b + 1.96 * se).toFixed(2)})`; } });
+  const yBeta = { min: -0.1, max: 1.0, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } };
+  const hi = RK.t + RK.beta_pre;
 
-  /* 3c. weekly betas */
-  const B = D.betas, BR = [["pre", "Pre-tariff", C.neutral, -0.18], ["t50", "50%, before Hormuz", C.blue, 0], ["hormuz", "50% + Hormuz", C.yellow, 0.18]];
-  const HZ = [1, 2, 4, 8];
-  make("c-beta", { type: "scatter", data: { datasets: BR.map(([k, lab, col, off]) => ({
-    label: lab, data: B[k].map((b, i) => ({ x: i + 1 + off, y: b.beta })), ci: B[k].map(b => [b.beta - 1.96 * b.se, b.beta + 1.96 * b.se]),
-    borderColor: col, backgroundColor: col, pointRadius: 5, pointHoverRadius: 6, pointBorderColor: C.surface, pointBorderWidth: 2 })) },
-  options: merge(baseOpts({ interaction: { mode: "nearest", intersect: false, axis: "x" } }), {
-    plugins: { refLines: { h: [{ y: 0, strong: true }, { y: 0.5, dash: true, label: "theory at 50%: β = t = 0.5" }] },
-      tooltip: { callbacks: { title: it => `${HZ[Math.round(it[0].raw.x) - 1]}-week change`, label: c => { const b = B[BR[c.datasetIndex][0]][c.dataIndex]; return ` ${c.dataset.label}: β ${b.beta.toFixed(2)} (95% CI ${(b.beta - 1.96 * b.se).toFixed(2)} to ${(b.beta + 1.96 * b.se).toFixed(2)})`; } } } },
-    scales: { x: { type: "linear", min: 0.5, max: 4.5, ticks: { stepSize: 1, callback: v => Number.isInteger(v) && v >= 1 && v <= 4 ? `${HZ[v - 1]} wk` : "" } },
-      y: { min: -0.6, max: 1.4, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } } } }) },
-  () => ({ head: ["Regime", "Horizon", "β", "s.e."], rows: BR.flatMap(([k, lab]) => B[k].map(b => [lab, `${b.h} wk`, b.beta.toFixed(2), b.se.toFixed(2)])) }));
+  /* 3b. monthly betas by regime */
+  const MK = ["pre", "t50", "hormuz"], ML = ["", "Pre-tariff", "50%, before Hormuz", "50% + Hormuz"];
+  make("c-rmon", { type: "scatter", data: { datasets: [
+    dot("MW premium", MK.map((k, i) => ({ x: i + 1 - 0.1, b: RM[k].mw, se: RM[k].mw_se })), C.blue),
+    dot("Rotterdam DP (control)", MK.map((k, i) => ({ x: i + 1 + 0.1, b: RM[k].dp, se: RM[k].dp_se })), C.aqua),
+    bandKey,
+  ] }, options: merge(baseOpts({ interaction: { mode: "nearest", intersect: false, axis: "x" } }), {
+    plugins: { refLines: { h: [{ y: 0, strong: true }] }, bands: { items: [{ x0: 1.6, x1: 2.4, y0: RK.t, y1: hi }, { x0: 2.6, x1: 3.4, y0: RK.t, y1: hi }] },
+      tooltip: { callbacks: dotTip(ML) } },
+    scales: { x: { type: "linear", min: 0.5, max: 3.5, afterBuildTicks: ax => { ax.ticks = [1, 2, 3].map(value => ({ value })); }, ticks: { autoSkip: false, callback: v => Number.isInteger(v) && v >= 1 && v <= 3 ? [ML[v], `${RM[MK[v - 1]].months} months`] : "" } }, y: yBeta } }) },
+  () => ({ head: ["Regime", "Months", "β MW", "s.e.", "β DP", "s.e.", "Theory MW"], rows: MK.map((k, i) => [ML[i + 1], RM[k].months, RM[k].mw.toFixed(2), RM[k].mw_se.toFixed(2), RM[k].dp.toFixed(2), RM[k].dp_se.toFixed(2), RM[k].t ? `${RK.t.toFixed(2)}–${hi.toFixed(2)}` : "–"]) }));
+
+  /* 3c. CME betas by horizon, against the pre-tariff futures baseline */
+  const CL = ["Pre-tariff, monthly", "1 day", "5 days", "10 days"];
+  make("c-rcme", { type: "scatter", data: { datasets: [
+    dot("Pre-tariff: LME MW futures", [{ x: 0, b: RK.fut_base.beta, se: RK.fut_base.se }], C.neutral),
+    dot("Under 50%: CME Oct-26", RB.map((b, i) => ({ x: i + 1, b: b.beta, se: b.se })), C.blue),
+    bandKey,
+  ] }, options: merge(baseOpts({ interaction: { mode: "nearest", intersect: false, axis: "x" } }), {
+    plugins: { refLines: { h: [{ y: 0, strong: true }, { y: RK.fut_base.beta, dash: true }] }, bands: { items: [{ x0: 0.6, x1: 3.5, y0: RK.t, y1: hi }] },
+      tooltip: { callbacks: dotTip(CL) } },
+    scales: { x: { type: "linear", min: -0.5, max: 3.5, afterBuildTicks: ax => { ax.ticks = [0, 1, 2, 3].map(value => ({ value })); }, ticks: { autoSkip: false, callback: v => Number.isInteger(v) && v >= 0 && v <= 3 ? [CL[v], `${v ? RB[v - 1].n : RK.fut_base.n} changes`] : "" } }, y: yBeta } }) },
+  () => ({ head: ["Change over", "Changes", "β", "s.e.", "R²", "Risk $/t", "With 0.5 t LME"], rows: [[CL[0], RK.fut_base.n, RK.fut_base.beta.toFixed(2), RK.fut_base.se.toFixed(2), "–", "–", "–"],
+    ...RB.map((b, i) => [CL[i + 1], b.n, b.beta.toFixed(2), b.se.toFixed(2), b.r2.toFixed(2), n0(b.risk), n0(b.risk_overlay)])] }));
 
   /* 4a. US crude imports by origin */
   const O = D.flows_origin, OCOL = { "Canada": C.blue, "United Arab Emirates": C.orange, "Argentina": C.aqua, "India": C.yellow, "Bahrain": C.magenta, "Rest": C.neutral };

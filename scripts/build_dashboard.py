@@ -180,56 +180,66 @@ par50 = float(parity_ca(f_net, f_mw, aug["lme"], aug["dp"], 0.50))
 par25 = float(parity_ca(f_net, f_mw, aug["lme"], aug["dp"], 0.25))
 aug26 = {"parity50": par50, "parity25": par25, "parity_drop": par50 - par25, "cme_drop": 270}
 
-# ---------------------------------------------------------------- 3. risk: hedge ratio
-mm = pd.concat([lme_m, mwp_all], axis=1).dropna()
-mm["allin"] = mm["lme"] + mm["mwp"]
-dm = mm.diff().dropna()
-dm["t_ca"] = [tariff_rate(t, "Canada") for t in dm.index]
-roll12 = pd.Series({end: np.polyfit(dm.loc[:end, "lme"].iloc[-12:], dm.loc[:end, "allin"].iloc[-12:], 1)[0]
-                    for end in dm.index[11:]})
-rh = roll12.loc["2021-01-01":]
-hedge_roll = {"months": ym(rh.index), "ratio": rnd(rh, 3), "theory": rnd(1 + dm["t_ca"].reindex(rh.index), 3)}
+# ---------------------------------------------------------------- 3. risk: the tariff couples the premium to LME
+# Monthly: slope of Δ premium on Δ LME cash (monthly averages) by regime, MW premium and Rotterdam DP (the control).
+# Months whose change spans a tariff announcement or step are left out.
+STEP_MONTHS = pd.to_datetime(["2025-02-01", "2025-03-01", "2025-04-01", "2025-06-01", "2025-07-01"])
+dmo = pd.concat([lme_m, dp_m, mwp_all], axis=1).diff().drop(STEP_MONTHS)
+dmo["t_ca"] = [tariff_rate(d, "Canada") for d in dmo.index]
+risk_monthly = {}
+for k, (a, b) in {"pre": ("2021-08-01", "2025-01-01"), "t50": ("2025-08-01", "2026-02-01"),
+                  "hormuz": ("2026-03-01", "2026-08-01")}.items():
+    s = dmo.loc[a:b]
+    mw, eu = hac_ols(s["mwp"], s["lme"], 1), hac_ols(s["dp"], s["lme"], 1)
+    risk_monthly[k] = {"months": len(s), "t": float(s["t_ca"].mean()),
+                       "mw": float(mw.params["lme"]), "mw_se": float(mw.bse["lme"]),
+                       "dp": float(eu.params["lme"]), "dp_se": float(eu.bse["lme"])}
+BETA_PRE = risk_monthly["pre"]["mw"]
+pool = dmo.loc["2021-08-01":"2026-08-01"].dropna()
+X = pd.DataFrame({"lme": pool["lme"], "t_lme": pool["t_ca"] * pool["lme"]})
+f1, f2 = hac_ols(pool["mwp"], X, 2), hac_ols(pool["mwp"], X.assign(dp=pool["dp"]), 2)
+risk_pooled = {"months": len(pool), "c": float(f1.params["t_lme"]), "se": float(f1.bse["t_lme"]),
+               "c_dp": float(f2.params["t_lme"]), "se_dp": float(f2.bse["t_lme"])}
 
-hedge_regimes = {}
-for k, (a, b) in {"pre": ("2019-04-01", "2025-01-01"), "t50_pre_hormuz": ("2025-07-01", "2026-02-01"),
-                  "hormuz": ("2026-03-01", None), "t50_all": ("2025-07-01", None)}.items():
-    s = dm.loc[a:b]
-    fit = hac_ols(s["allin"], s["lme"], 1)
-    hedge_regimes[k] = {"months": len(s), "ratio": float(fit.params["lme"]), "se": float(fit.bse["lme"]),
-                        "resid_1to1": float((s["allin"] - s["lme"]).std()), "resid_opt": float(fit.resid.std())}
+# Futures: CME Oct-26 MW contract on LME 3M, 1 Jun – 30 Sep 2026, tariff-news days left out, over 1/5/10-day changes
+cme = pd.read_csv(DATA / "midwest_premium_cme.csv", parse_dates=["date", "contract_month"])
+oct26 = cme[cme["contract_month"] == "2026-10-01"].set_index("date")["premium_usd_t"]
+l3m = lme.set_index("date")["three_month"]
+px = pd.concat([oct26.rename("fut"), l3m.rename("lme3m")], axis=1, join="inner").loc["2026-06-01":"2026-09-30"]
+POLICY_DAYS = pd.to_datetime(["2026-08-20", "2026-08-21", "2026-08-24"])
+T_NOW = 0.5
+cme_betas = []
+for h in (1, 5, 10):
+    ch = (px - px.shift(h)).dropna()
+    hit = pd.Series(px.index.isin(POLICY_DAYS), index=px.index).rolling(h, min_periods=1).max().astype(bool)
+    ch = ch[~hit.reindex(ch.index)]
+    fit = hac_ols(ch["fut"], ch["lme3m"], h)
+    cme_betas.append({"h": h, "n": len(ch), "beta": float(fit.params["lme3m"]), "se": float(fit.bse["lme3m"]),
+                      "r2": float(fit.rsquared), "risk": float(ch["fut"].std()),
+                      "risk_overlay": float((ch["fut"] - T_NOW * ch["lme3m"]).std())})
+daily = px.diff().dropna()
+policy = {"drop": float(daily.loc["2026-08-20", "fut"]), "rise": float(daily.loc["2026-08-24", "fut"]),
+          "daily_sd": float(daily.drop(POLICY_DAYS, errors="ignore")["fut"].std())}
+cme_path = {"dates": [d.strftime("%Y-%m-%d") for d in px.index], "fut": rnd(px["fut"] - px["fut"].iloc[0]),
+            "half_lme": rnd(T_NOW * (px["lme3m"] - px["lme3m"].iloc[0]))}
 
-# Weekly beta of a fixed MW futures contract on LME 3M, by horizon
+# Pre-tariff futures baseline: the LME MW contract (the CME one barely traded), month-end to month-end changes in the
+# contract 3 months after the start month, on LME 3M; start months Mar 2019 – Dec 2024
 by_contract = (fut.assign(contract_month=pd.to_datetime(fut["contract_month"]))
                .pivot_table(index="date", columns="contract_month", values="premium_usd_t"))
-l3m = lme.set_index("date")["three_month"]
-fridays = pd.date_range("2019-03-15", fut["date"].max(), freq="W-FRI")
-
-
-def settle_on(series, day):
-    s = series.loc[:day]
-    return s.iloc[-1] if len(s) else np.nan
-
-
-HORIZONS = (1, 2, 4, 8)
-rec = []
-for h in HORIZONS:
-    for d0 in fridays:
-        d1 = d0 + pd.Timedelta(weeks=h)
-        cm = (d0.to_period("M") + 3).to_timestamp()
-        if d1 > fridays[-1] or cm not in by_contract:
-            continue
-        rec.append({"h": h, "start": d0, "dfut": settle_on(by_contract[cm], d1) - settle_on(by_contract[cm], d0),
-                    "dlme": settle_on(l3m, d1) - settle_on(l3m, d0)})
-weekly = pd.DataFrame(rec).dropna()
-WEEKLY_REGIMES = {"pre": ("2019-03-15", "2025-01-31"), "t50": ("2025-06-06", "2026-02-27"),
-                  "hormuz": ("2026-03-06", "2026-08-28")}
-betas = {}
-for k, (a, b) in WEEKLY_REGIMES.items():
-    betas[k] = []
-    for h in HORIZONS:
-        s = weekly[(weekly["h"] == h) & (weekly["start"] >= a) & (weekly["start"] + pd.Timedelta(weeks=h) <= b)]
-        fit = hac_ols(s["dfut"], s["dlme"], h)
-        betas[k].append({"h": h, "beta": float(fit.params["dlme"]), "se": float(fit.bse["dlme"])})
+month_ends = by_contract.index.to_series().groupby(by_contract.index.to_period("M")).last()
+base = []
+for p0, d0 in month_ends.loc[:"2024-12"].items():
+    d1, cm = month_ends.get(p0 + 1), (p0 + 3).to_timestamp()
+    if d1 is None or cm not in by_contract:
+        continue
+    base.append({"dfut": by_contract.loc[d1, cm] - by_contract.loc[d0, cm],
+                 "dlme": l3m.loc[:d1].iloc[-1] - l3m.loc[:d0].iloc[-1]})
+base = pd.DataFrame(base).dropna()
+bf = hac_ols(base["dfut"], base["dlme"], 1)
+risk = {"monthly": risk_monthly, "pooled": risk_pooled, "beta_pre": BETA_PRE, "t": T_NOW,
+        "cme_betas": cme_betas, "cme_path": cme_path, "policy": policy,
+        "fut_base": {"n": len(base), "beta": float(bf.params["dlme"]), "se": float(bf.bse["dlme"])}}
 
 # ---------------------------------------------------------------- 4. flows
 BASE = ("2024-03-01", "2025-02-01")
@@ -282,7 +292,7 @@ canada_x_change = {"us_share_base": float(ex["USA"].loc[BASE[0]:BASE[1]].sum() /
 
 out = {"price": price,
        "implied": implied, "implied_regimes": implied_regimes, "slope": slope, "forecast": forecast,
-       "aug26": aug26, "hedge_roll": hedge_roll, "hedge_regimes": hedge_regimes, "betas": betas,
+       "aug26": aug26, "risk": risk,
        "flows_origin": flows_origin, "origin_change": origin_change, "canada_share": canada_share,
        "products": products, "product_change": product_change,
        "canada_exports": canada_exports, "canada_x_change": canada_x_change,
@@ -290,11 +300,11 @@ out = {"price": price,
                         "canada": world.index.max().strftime("%Y-%m")}}
 
 if __name__ == "__main__":
-    summary = {k: out[k] for k in ["implied_regimes", "aug26", "hedge_regimes", "origin_change",
+    summary = {k: out[k] for k in ["implied_regimes", "aug26", "origin_change",
                                    "canada_share", "product_change", "canada_x_change", "data_through"]}
     summary["fstats"] = fstats
     summary["rule"] = rule
-    summary["betas"] = betas
+    summary["risk"] = {k: v for k, v in risk.items() if k != "cme_path"}
     print(json.dumps(summary, indent=1, default=float))
     tpl = ROOT / "dashboard" / "template.html"
     if tpl.exists():
