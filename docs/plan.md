@@ -2,7 +2,7 @@
 
 A handoff file for picking the project up in a new session. Read `README.md` (question, method, data), `notes.md` (the user's running notes; it may have uncommitted edits, don't overwrite it) and this file before changing anything.
 
-Last updated 7 Oct 2026.
+Last updated 9 Oct 2026.
 
 ## Context
 
@@ -27,7 +27,7 @@ Last updated 7 Oct 2026.
 | 19 | Tariff rate implied by import parity (actual vs forward) | |
 | 20 | **Note: supply stack, needs new data** (added 7 Oct) | Not built |
 | 21–23 | **Method 1: did the futures curve misprice the premium?** (added 7 Oct) | Done |
-| 24–26 | **Method 3: hedge ratio under an ad valorem tariff** (added 7 Oct) | Done; weekly parts need CME |
+| 24–28 | **Risk: the tariff couples the premium to LME** (rewritten 9 Oct): mechanism and predictions, causal diagram, monthly betas with Rotterdam DP as control, CME Oct-26 futures betas, takeaway | Done on one CME contract; add Sep-26 / Nov-26 |
 
 Shared objects later cells rely on: `lme_m`, `dp_m`, `mwp_all` (USGS monthly premium to Jun 2026, then month-end M01), `tariff_rate(month, origin)`, `TARIFF_STEPS`, `FREIGHT` + `lo, mid, hi`, `r` (route frame, cell 7), `me` (month-end curve, cell 17), `by_contract` (cell 18), `lme3m_me` (cell 19), `HORMUZ` (cell 22).
 
@@ -41,15 +41,15 @@ From the earlier work (details in `notes.md`):
 
 From the analyses added on 7 Oct:
 - **Method 1 (cells 21–23).** Before the tariff, M03 was an unbiased forecast (+13 $/t, 69 forecasts). Under 50%, before Hormuz, it was too low in **7 of 7** forecasts, by **342 $/t** on average. It did worse than no change (RMSE 366 vs 252) and than Canada parity (218). The three fresh (non-stale) quotes still missed by +240. Since Hormuz there's no bias (−23, n = 4). The rule "buy M03 when below Canada parity" fired 11 times, all after Jun 2025, at +276 $/t per trade, so it is really a bet on one regime. Reading: a peso problem (priced relief that never came) or a risk premium paid by hedgers.
-- **Method 3 (cells 24–26).** The residual monthly risk of a 1:1 LME hedge on US-delivered metal rose from **50 to 90 $/t**. The monthly hedge ratio is 1.32–1.36 at 50% against a theory of 1 + t = 1.5, but it was already 1.22 pre-tariff, ~1.6 in the 2021 rally and ~1.0 in 2024. So it isn't only the tariff. Pooled premium LME beta = 0.21 + 0.54 × t (s.e. 0.28). The weekly MW curve picks up LME moves with a lag: β ≈ 0 within a week, 0.70 over 8 weeks (50%, before Hormuz). This week's LME move predicts the next 4 weeks of MW futures moves (pre-tariff 0.18, s.e. 0.04). The weekly results are on stale LME settlements and must be re-run on CME.
+- **Risk (cells 24–28, rewritten 9 Oct; replaces the old method 3).** The story: before the tariff, LME and the premium shared only common causes; a duty on value adds a direct link, ∂MWP/∂LME = t. Monthly: the MW premium's LME beta went 0.19 → 0.30 (50%, before Hormuz) while Rotterdam DP's went 0.10 → 0.00, so the rise is US-specific; in the Hormuz months both rose (0.33, 0.26). Pooled: 0.19 + 0.46 × t (s.e. 0.20; 0.33 with ΔDP held fixed), so only about half the link shows up in the monthly physical premium. CME Oct-26 on LME 3M, Jun–Sep 26, without the 20/21/24 Aug tariff news days: β = 0.22 (1 day), 0.43 (5 days), 0.55 (10 days, s.e. 0.10) against a theory of 0.50–0.69. A 0.5 t LME overlay cuts 10-day risk 110 → 65 $/t but adds risk on daily changes (the contract settles a few days behind LME). 20 Aug: −298 $/t in a day, 12× the usual daily move. The lead-lag work from 7 Oct is dropped (peripheral).
 
 ## Data caveats (check before trusting a number)
 
 1. **Hormuz shock from 2 Mar 2026** (cell 11). It drives the Mar–May 26 jump in DP (361 → 596 $/t) and the fall in **Gulf-origin** US imports (45 → 31 kt/month, Apr–Jun 26). It does **not** explain the fall in total crude against the pre-tariff baseline, which happened in 2025. For tariff attribution, use months up to Feb 2026.
-2. **The LME MW futures curve is stale** (cell 16). M02+ are unchanged on ~81% of days since 2024. The file showed the Aug 2026 Canada-news drop two business days after the CME move, at half its size. Daily and weekly work needs CME AUP settlements.
+2. **The LME MW futures curve is stale** (cell 16). M02+ are unchanged on ~81% of days since 2024. The file showed the Aug 2026 Canada-news drop two business days after the CME move, at half its size. Daily and weekly work needs CME AUP settlements (`data/midwest_premium_cme.csv`, Oct-26 only so far; Barchart allows one contract download a day).
 3. **DUP after Oct 2025 is reconstructed from DP** (`scripts/reconstruct_duty_unpaid.py`), with an error of about ±13 $/t, and much worse in Feb–May 2025.
 4. **Freight is assumed.** Before 2025 the Canada route sat 80–180 $/t above parity at a 0% tariff, the same size as the freight band. This baseline needs explaining before small post-tariff gaps can be read as arbitrage.
-5. **Duty basis.** The README says ad valorem on customs value throughout for HTS 7601. `notes.md` says it was weight-based until Apr 2026. Settle this from the proclamation text. Method 3 fits ad valorem, but the evidence is weak.
+5. **Duty basis.** The README says ad valorem on customs value throughout for HTS 7601. `notes.md` says it was weight-based until Apr 2026. Settle this from the proclamation text. The risk section's positive LME beta fits a duty on value, but the CME data all postdate 2 Apr 2026, and the monthly pre-April evidence is weak.
 6. **Aug 2026 premium** = M01 on 28 Aug, so the month is not fully fixed.
 7. **β in cell 7 is computed on all-in prices**, so LME sits on both sides and pulls it toward 1. Recompute it on premiums (ΔMWP / Δparity premium).
 
@@ -75,11 +75,11 @@ From the analyses added on 7 Oct:
 
 ### B. Memo (`memo.md`, one page)
 - [ ] Two pass-through numbers; landed cost vs actual chart; Canada-share chart; when arbitrage was open or shut, and why.
-- [ ] "So what for Hydro": the exposure map (question 2 below), the forecast-bias finding (method 1) and the hedge-ratio finding (method 3).
+- [ ] "So what for Hydro": the exposure map (question 2 below), the forecast-bias finding (method 1) and the risk finding (premium positions carry ~t of LME; the overlay can't hedge tariff news).
 - [ ] State the limits: Hormuz confound, stale curve, assumed freight.
 
 ### C. Needs new data (the user is looking into these)
-- [ ] **CME AUP settlements** (Aluminum MW U.S. Transaction Premium Platts). Then re-run the cell 18 event table and cell 25 parts B and C, and it unlocks method 2.
+- [ ] **CME AUP settlements** (Aluminum MW U.S. Transaction Premium Platts). Oct-26 is in (`scripts/clean_comex.py`, used in cell 27). Next: Sep-26 and Nov-26 (one Barchart download a day; drop the file in `data/raw/comex` and re-run the script), then re-run the cell 18 event table on CME. It also unlocks method 2.
 - [ ] **US import supply stack** (cell 20 lists the data): FOB value by origin (USITC DataWeb or Comtrade US imports with values; the same API as `scripts/fetch_canada_exports.py`), freight by origin, available volume by origin (exports to the world), and US import demand (USGS). Rank origins by landed cost, cross with demand, and run scenarios: Canada 25% / others 50%, everyone 25%, Gulf back.
 
 ### D. Optional methods (not built; good interview material even if unbuilt)
@@ -98,7 +98,7 @@ From the analyses added on 7 Oct:
    - US extrusion plants pass the metal price through, so only timing effects.
    - US recyclers likely lose, because the scrap-to-billet spread scales with the MW premium.
 3. **Which spreads can be hedged?**
-   - LME: about 1.3–1.5× cover for US-delivered metal (method 3).
+   - LME: about 1.3–1.5× cover for US-delivered metal, and ~t of LME per tonne inside any premium position (risk section).
    - Regional premiums: CME/LME futures are thin beyond the front months and policy moves come as jumps. The practical tools are contract structure (fixed vs index-linked premium), natural offsets between segments, and destination flexibility.
    - Also: LME time spreads at low stocks, and the low-carbon premium / CBAM (slow-moving; CBAM costs phase in from 2026).
 4. **Supply chain.**
@@ -109,7 +109,7 @@ From the analyses added on 7 Oct:
 ## How to work on the notebook
 
 - **Style.** Constants are in cells 5 and 7: `BLUE #2a78d6`, `ORANGE #eb6834`, `GREEN #1baf7a`, `INK #333333`, `MUTED #8a8a85` (a validated colour-blind-safe palette). Two-panel figures are 11×8 with `height_ratios=[3, 2]`, y-grid `#e5e5e0`, top/right spines off, dotted event lines with rotated labels. Each analysis is followed by a markdown "Takeaway" cell with the numbers.
-- **Execution.** The notebook has been run with nbclient. To keep diffs small, the 7 Oct changes executed a copy and transplanted outputs into the new cells only; existing cells kept their stored outputs. A full re-run (`jupyter nbconvert --to notebook --execute --inplace notebook.ipynb`) also works, but rewrites every cell's output. Cells 22 and 25 need `statsmodels`.
+- **Execution.** The notebook has been run with nbclient. To keep diffs small, the 7 Oct changes executed a copy and transplanted outputs into the new cells only; existing cells kept their stored outputs. A full re-run (`jupyter nbconvert --to notebook --execute --inplace notebook.ipynb`) also works, but rewrites every cell's output. Cells 22, 26 and 27 need `statsmodels`. The 9 Oct risk rewrite was executed the same way. `scripts/fetch_lme.py` with no arguments fetches 2024 onwards and **overwrites** `lme_aluminium.csv`; run `python scripts/fetch_lme.py 2018 2026`.
 - **Data rules.** Don't sum `Total` / `Other` (US imports) or `World` (Canada exports) rows with countries. The monthly MW premium is USGS to Jun 2026 and then month-end M01 (`mwp_all`). DP starts Jul 2021, so parity-based series start there.
 
 ## Sources

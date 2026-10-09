@@ -12,7 +12,7 @@ The project has four strands:
 
 1. **Price: pass-through.** Compare the physical Midwest price (LME + MW premium) with the *landed cost* of importing a tonne. The landed cost is LME + origin premium + freight + tariff. The gap between the two is the import margin. A gap near zero means full pass-through. A persistent gap means the market is coping some other way: running down inventory, substituting domestic or scrap units, or expecting the tariff to be reversed.
 2. **Futures: expectations.** Did the MW premium futures curve forecast the premium correctly under the tariff, or did it price a relief that never came?
-3. **Risk: hedging.** How does an ad valorem tariff change the LME exposure of US-delivered metal and of an MW premium position?
+3. **Risk: hedging.** Does a duty charged on value couple the MW premium directly to LME, and what does that mean for hedging US-delivered metal and premium positions?
 4. **Volume: flows.** How did US imports by origin and product change around each tariff step, and where did the Canadian tonnes that stopped going to the US go?
 
 ## Summary
@@ -21,7 +21,7 @@ The project has four strands:
 - Built a data pipeline in Python (pandas, statsmodels) from the LME, USGS, UN Comtrade (API) and Platts/Fastmarkets-based premium contracts: daily LME prices and stocks, the MW premium futures curve (M01–M15), Rotterdam duty-paid and duty-unpaid premiums, US imports by origin and product, and Canadian exports by destination.
 - Rebuilt the missing Rotterdam duty-unpaid premium from the duty-paid series by estimating the effective EU import duty (median 2.7%). The backtest error was about ±13 $/t.
 - Extended the monthly MW premium series past its USGS end date using month-end front-month futures, after checking they match the USGS series within 10 $/t (median).
-- Found that the MW futures settlements were often stale (back months unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half size compared with CME). Flagged stale quotes in every test.
+- Found that the MW futures settlements were often stale (back months unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half size compared with CME). Flagged stale quotes in every test, and added CME settlements for the risk test.
 - Separated the tariff from the Mar 2026 Strait of Hormuz supply shock by splitting every analysis at the closure date.
 
 **Price: import parity and pass-through**
@@ -35,10 +35,11 @@ The project has four strands:
 - Backtested a rule that buys the 3-month contract whenever it trades below Canada import parity: +276 $/t per trade with 10 of 11 trades profitable, against +80 $/t for always being long. This is in-sample, before costs, and from a single regime.
 - Read the August 2026 US–Canada tariff episode against the parity model. A Canada-only cut to 25% would lower Canada parity by ~920 $/t, but deferred CME contracts fell only ~270 $/t. This is consistent with Canada not being the marginal supplier to the US.
 
-**Risk: LME hedging under an ad valorem tariff**
-- Derived that a tariff charged on value makes US-delivered metal move like (1 + t) tonnes of LME, so a 1:1 LME hedge is too small.
-- Estimated minimum-variance hedge ratios (HAC regressions, by regime and on a rolling window): ~1.3 at 50% against 1.2 before the tariff. With a 1:1 hedge, monthly residual risk rose from 50 to 90 $/t (the 90 includes the Gulf shock).
-- Showed that the MW futures curve reacts to LME moves 1–2 months late. The weekly beta is ~0 at 1 week and 0.7 at 8 weeks, and this week's LME move predicts the next four weeks of futures moves. A daily delta therefore understates the premium's LME exposure.
+**Risk: the tariff couples the premium to LME**
+- Framed the change as a causal one. Before the tariff, LME and the premium moved together only through common causes (global supply and demand). A duty charged on value adds a direct link: at import parity, ∂MWP/∂LME = t, set by the tariff rule rather than estimated.
+- Tested it against a control. The MW premium's monthly LME beta rose from 0.19 to 0.30 at 50% before the Hormuz closure, while the Rotterdam duty-paid premium's fell from 0.10 to 0.00, so a tight market doesn't explain the rise.
+- Measured it on CME futures. The Oct-26 MW contract moved 0.55 $/t per $/t of LME 3M over 10-day changes (s.e. 0.10), against a theory of 0.50–0.69. In the monthly physical premium only about half the link shows up (+0.23 at 50%, s.e. 0.10).
+- So what for a hedger: a premium position now carries ~0.5 t of LME per tonne. An overlay of that size, taken from the tariff rule with no fitting, cut the 10-day risk of an Oct-26 position from 110 to 65 $/t. It can't hedge tariff news: on 20 Aug 2026 the contract fell 298 $/t in a day, 12 times its usual daily move.
 
 **Flows: how trade adjusted**
 - US crude aluminium imports fell 25% against the pre-tariff baseline. Imports from Canada fell 38% (224 → 140 kt/month), and Canada's share fell from 75% to 62%. India (+77%) and the UAE (+27%) partly filled the gap.
@@ -87,10 +88,9 @@ Freight is an assumption with a sensitivity band, because no free series exists.
 
 **Futures as a forecast.** At each month-end, M03 is the market's forecast of the premium two months out. Its error is compared with two benchmarks, no change and Canada import parity at the rate in force on the trade date, with Newey–West standard errors because the forecasts overlap. Results are split into three regimes: pre-tariff, 50% before the Hormuz closure, and 50% after it. Forecasts whose horizon spans a tariff step are excluded. Stale M03 quotes are flagged and reported separately.
 
-**Hedge ratio under an ad valorem tariff.** At Canada parity, ∂MWP/∂LME = t, so the all-in US price moves by 1 + t per unit of LME. This is tested three ways:
-- monthly minimum-variance hedge ratios of the all-in price on LME (HAC errors), by regime, on a rolling 12-month window, and pooled with a t × ΔLME interaction;
-- weekly changes in a fixed MW futures contract regressed on LME 3M changes over 1, 2, 4 and 8 weeks;
-- a lead-lag regression testing whether this week's LME move predicts the next four weeks of futures moves.
+**The tariff's link from LME to the premium.** At Canada parity, MWP = (DP − F_netback) + F_mw + t × (LME + DP − F_netback), so ∂MWP/∂LME = t: a direct link that didn't exist at a 0% tariff, when LME and the premium shared only common causes. The all-in US price therefore moves by 1 + t per unit of LME. The prediction is that the premium's LME beta rises by about t, to between t and t plus its pre-tariff level. It is tested two ways:
+- **Monthly spot.** Slope of Δ MW premium (monthly average) on Δ LME cash (monthly average), by regime, with HAC errors. The Rotterdam DP premium is the control: it faces the same global market but no US tariff. A pooled regression on ΔLME and t × ΔLME (theory: coefficient 1) is estimated with and without ΔDP. Months whose change spans a tariff announcement or step are left out.
+- **Futures.** Slope of the CME Oct-26 MW contract on LME 3M over 1-, 5- and 10-day changes (overlapping, HAC errors), Jun–Sep 2026. The window starts when the contract trades on most days and ends before its averaging month. Tariff news days (20, 21 and 24 Aug 2026) are left out. The pre-tariff baseline comes from the LME's MW contract: month-end to month-end changes in a fixed contract on LME 3M, 2019–24 (β = 0.19), because the CME contract barely traded then. Hedge effect: the risk of a premium position with and without an overlay of t tonnes of LME per tonne.
 
 **Flows.** Monthly US imports by origin (crude) and by product (crude, semis, scrap), compared with a pre-tariff baseline (Mar 2024 – Feb 2025) in each tariff regime. On the Canadian side, exports of unwrought metal by destination over the same windows.
 
@@ -101,6 +101,7 @@ Freight is an assumption with a sensitivity band, because no free series exists.
 | `lme_aluminium.csv` | LME cash, 3M, stocks (westmetall.com) | Daily | Jan 2018 – Oct 2026 | Monthly means match the USGS LME cash column to within 0.5 $/t. |
 | `midwest_premium.csv` | MW premium and all-in MW price (USGS, Platts monthly averages) | **Monthly** | Aug 2020 – Jun 2026 | Monthly averages, not daily spot. Premium = all-in MW − LME cash. |
 | `midwest_premium_curve.csv` | LME MW premium futures (Platts), M01–M15 | Daily | Mar 2019 – Aug 2026 | Cash-settled on the monthly average of the Platts MW premium. M01 is the trade date's own calendar month, so it is part-fixed and converges to that month's average. M01 at month-end matches the USGS monthly premium within ~10 $/t (median; max 34), which justifies extending the monthly series to Aug 2026. **M01 is not a spot price**: within a month it lags the spot premium, and it switches contract on the first trading day of each month. This is the LME's thinly traded contract; most volume on the same assessment trades on CME (AUP). Since 2024, M02+ are unchanged on ~81% of days. |
+| `midwest_premium_cme.csv` | CME MW premium futures (AUP, Platts), one row per date and contract (Barchart downloads, $/lb converted to $/t) | Daily | Oct 26 contract: Jan 2025 – Oct 2026 | One contract per download, one download a day. Thin until 2026: 60–90% of settlements unchanged in 2025, 12% in Jun–Sep 2026. Settlements catch up with LME over a few days. |
 | `europe_duty_unpaid_premium.csv` | Rotterdam DUP (investing.com continuous series) | Daily → monthly | Mar 2019 – **Oct 2025** | Ends before the most interesting period. Looks like a rolling front-month futures series rather than the Fastmarkets assessment itself (month-end roll spikes, ~70% unchanged days). Source definition not yet confirmed. |
 | `europe_duty_paid_premium.csv` | Rotterdam DP (LME ED final settlement = monthly average of Fastmarkets assessment) | Monthly | Jul 2021 – Aug 2026 | |
 | `europe_duty_unpaid_premium_reconstructed.csv` | Rotterdam DUP, observed and then reconstructed from DP | Monthly | Jul 2021 – Aug 2026 | `source` column marks reconstructed months; low/mid/high band. See below. |
@@ -112,13 +113,13 @@ Freight is an assumption with a sensitivity band, because no free series exists.
 - **DUP after Oct 2025: reconstructed.** Duty-paid metal carries the EU import duty (3% on unwrought aluminium, charged on LME + DUP), so `DUP = (DP − r·LME) / (1 + r)`. Here `r` is the *effective* duty rate. It is lower than 3% because part of the metal in Rotterdam comes from duty-free origins. Fitted on the overlap months, r has a median of 2.7% and a 10–90% range of 1.9–3.3%. The backtest error is about ±13 $/t. Feb–May 2025 is the exception: r collapsed to about 0% as metal turned away from the US flooded Europe, and the reconstruction overstates DUP by 50–80 $/t in those months. Reconstructed months are plotted as a dashed line and the band is carried into the landed-cost sensitivity. DUP is needed only for the Rotterdam route; the Canada route uses DP, which is observed through Aug 2026.
 - **Freight.** Fixed assumptions with a low/mid/high range. Before 2025 the Canada route sat 80–180 $/t above parity at a 0% tariff, the same size as the freight band, so small post-tariff gaps should not be read as arbitrage.
 - **Hormuz shock.** Iran closed the Strait of Hormuz on 2 Mar 2026. It drives the Mar–May 2026 jump in Rotterdam DP (361 → 596 $/t) and the fall in Gulf-origin US imports. For tariff attribution, use months up to Feb 2026; the futures and hedging analyses split the 50% regime at the closure.
-- **Stale futures curve.** Daily and weekly results on `midwest_premium_curve.csv` understate and delay moves. Around the Aug 2026 Canada news, the file showed the drop two business days after the CME move and at about half its size. The weekly hedge-ratio tests should be re-run on CME AUP settlements.
+- **Stale futures curve.** Daily and weekly results on `midwest_premium_curve.csv` understate and delay moves. Around the Aug 2026 Canada news, the file showed the drop two business days after the CME move and at about half its size. The risk test uses CME settlements (`midwest_premium_cme.csv`); the event table still uses the LME curve.
 - **Aug 2026 premium** is M01 on 28 Aug, so that month is not fully fixed.
 - **US-located inventory.** Not on hand; there are no public US-specific stocks.
 
 ## Open work
 
-- Re-run the event table and the weekly hedge-ratio tests on CME AUP settlements.
+- Re-run the event table on CME AUP settlements, and add the Sep-26 and Nov-26 contracts to the futures part of the risk test.
 - Build a US import supply stack (FOB value, freight and available volume by origin, against US import demand) to test which origin sets the US price, and run differentiated-tariff scenarios (e.g. Canada 25%, others 50%).
 - Compute pass-through on premiums (ΔMWP / Δparity premium) as well as on all-in prices, and the time it takes the gap to close.
 - Chart Canadian FOB unit values by destination (who pays the tariff), and set the sign of the import margin against flows with a 1–2 month lag.
@@ -129,6 +130,7 @@ Freight is an assumption with a sensitivity band, because no free series exists.
 - `scripts/fetch_usgs.py`: USGS Mineral Industry Surveys (MW premium, imports by country)
 - `scripts/clean_lme_premiums.py`: LME MW premium curve and Rotterdam DP
 - `scripts/clean_duty_unpaid.py`: Rotterdam DUP (investing.com export)
+- `scripts/clean_comex.py`: CME MW premium futures (Barchart downloads in `data/raw/comex`, one file per contract)
 - `scripts/reconstruct_duty_unpaid.py`: extends DUP past Oct 2025 from DP (run after the two cleaning scripts)
 - `scripts/fetch_canada_exports.py`: Canadian exports by destination from the UN Comtrade public API (no key needed; one month per call, cached in `data/raw/comtrade`)
 - `scripts/build_dashboard.py`: recomputes the headline results from `data/` and writes `dashboard/index.html` from `dashboard/template.html`
