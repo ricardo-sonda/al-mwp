@@ -76,8 +76,14 @@ r["par_mid"] = parity_ca(FREIGHT["ca_rtm"][MID], FREIGHT["ca_mw"][MID])
 r["par_lo"] = parity_ca(FREIGHT["ca_rtm"][HI], FREIGHT["ca_mw"][LO])
 r["par_hi"] = parity_ca(FREIGHT["ca_rtm"][LO], FREIGHT["ca_mw"][HI])
 pr = r.loc["2023-01-01":]
+# Before the 12 Mar 2025 step the tariff was two-tier (Canada 0%, others 10%), and Canada wasn't the price-setter:
+# the premium sat above Canada parity even at the highest freight. Window ends Jan 2025, before the 10 Feb announcement.
+two_tier = r.loc["2021-07-01":"2025-01-01"]
+gap = two_tier["mwp"] - two_tier["par_mid"]
 price = {"months": ym(pr.index), "mwp": rnd(pr["mwp"]), "parity": rnd(pr["par_mid"]),
-         "parity_lo": rnd(pr["par_lo"]), "parity_hi": rnd(pr["par_hi"]), "lme": rnd(pr["lme"])}
+         "parity_lo": rnd(pr["par_lo"]), "parity_hi": rnd(pr["par_hi"]), "lme": rnd(pr["lme"]),
+         "pre": {"n": len(two_tier), "above": int((two_tier["mwp"] > two_tier["par_hi"]).sum()),
+                 "gap_mean": float(gap.mean()), "gap_min": float(gap.min())}}
 
 
 # ---------------------------------------------------------------- implied tariff rate (Canada route)
@@ -96,8 +102,11 @@ imp["impl_fwd"] = (imp["m03"] - p_ca - f_ca) / (imp["lme3m"] + p_ca) * 100
 imp["stat"] = [tariff_rate(d + pd.DateOffset(months=2), "Canada") * 100 for d in imp.index]
 imp["stat_now"] = imp["t_ca"] * 100
 it = imp.loc["2024-01-01":]
+# The chart draws the legal schedule at its effective dates (steps); the monthly series is the rate in force at
+# month-end, for the tooltip and data table. The day-weighted t_ca stays in the parity maths only.
 implied = {"months": ym(it.index), "actual": rnd(it["impl_actual"], 1), "forward": rnd(it["impl_fwd"], 1),
-           "statutory": rnd(it["stat_now"], 1)}
+           "statutory": [rate_on(d + pd.offsets.MonthEnd(0), "Canada") * 100 for d in it.index],
+           "steps": [[d, rate * 100] for d, rate in TARIFF_STEPS["Canada"]]}
 
 
 def window_mean(s, a, b):
@@ -163,17 +172,11 @@ for w, s in fc[fc["window"] != "spans"].groupby("window", sort=False):
     fit = sm.OLS(s["err_fut"].values, np.ones(len(s))).fit(cov_type="HAC", cov_kwds={"maxlags": 1})
     fstats[w]["t_nw"] = float(fit.tvalues[0])
 
+# Canada parity is a forecast only from the first 25% step: before it, Canada (0%) was not the price-setter
 pf = fc.loc["2024-01-01":]
 forecast = {"months": ym(pf["target"]), "realised": rnd(pf["realised"]), "m03": rnd(pf["m03"]),
-            "parity": rnd(pf["parity"]), "err": rnd(pf["err_fut"]), "window": pf["window"].tolist(),
+            "parity": rnd(pf["parity"].where(pf.index >= "2025-03-01")), "err": rnd(pf["err_fut"]), "window": pf["window"].tolist(),
             "fresh": [bool(v) for v in pf["fresh"]], "stats": fstats}
-
-# August 2026: Canada parity at 50% vs a Canada-only 25%, at Aug 26 levels (mid freight). This is the drop only if
-# Canada stays the marginal supplier after the cut. The observed CME moves are in risk["policy"] (section 3).
-aug = r.loc["2026-08-01"]
-par50 = float(parity_ca(f_net, f_mw, aug["lme"], aug["dp"], 0.50))
-par25 = float(parity_ca(f_net, f_mw, aug["lme"], aug["dp"], 0.25))
-aug26 = {"parity50": par50, "parity25": par25, "parity_drop": par50 - par25}
 
 # ---------------------------------------------------------------- 3. risk: the tariff couples the premium to LME
 # Monthly: slope of Δ premium on Δ LME cash (monthly averages) by regime, MW premium and Rotterdam DP (the control).
@@ -283,12 +286,11 @@ us_share = ex["USA"] / world * 100
 canada_x_change = {"us_share_base": float(ex["USA"].loc[BASE[0]:BASE[1]].sum() / world.loc[BASE[0]:BASE[1]].sum() * 100),
                    "us_share_t50": float(ex["USA"].loc[T50[0]:T50[1]].sum() / world.loc[T50[0]:T50[1]].sum() * 100),
                    "nl_base": float(ex["Netherlands"].loc[BASE[0]:BASE[1]].mean() / 1e3),
-                   "nl_t50": float(ex["Netherlands"].loc[T50[0]:T50[1]].mean() / 1e3),
-                   "world_t50": float(world.loc[T50[0]:T50[1]].mean() / 1e3)}
+                   "nl_t50": float(ex["Netherlands"].loc[T50[0]:T50[1]].mean() / 1e3)}
 
 out = {"price": price,
        "implied": implied, "implied_regimes": implied_regimes, "slope": slope, "forecast": forecast,
-       "aug26": aug26, "risk": risk,
+       "risk": risk,
        "flows_origin": flows_origin, "origin_change": origin_change, "canada_share": canada_share,
        "products": products, "product_change": product_change,
        "canada_exports": canada_exports, "canada_x_change": canada_x_change,
@@ -296,7 +298,7 @@ out = {"price": price,
                         "canada": world.index.max().strftime("%Y-%m")}}
 
 if __name__ == "__main__":
-    summary = {k: out[k] for k in ["implied_regimes", "aug26", "origin_change",
+    summary = {k: out[k] for k in ["implied_regimes", "origin_change",
                                    "canada_share", "product_change", "canada_x_change", "data_through"]}
     summary["fstats"] = fstats
     summary["risk"] = {k: v for k, v in risk.items() if k != "cme_path"}
