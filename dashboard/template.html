@@ -265,8 +265,8 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
         <details class="data" data-chart="c-rmon"><summary>Data table</summary><div class="tbl"></div></details>
       </figure>
       <figure class="panel">
-        <figcaption><h3>Futures: CME Oct-26 β on LME 3M</h3><p class="sub">Over 1-, 5- and 10-day changes, Jun–Sep 2026, tariff-news days left out. Grey: pre-tariff baseline from the LME MW contract, monthly changes.</p></figcaption>
-        <div class="cw"><canvas id="c-rcme" role="img" aria-label="Dot plot of the CME Oct-26 beta on LME 3M by horizon against the pre-tariff baseline and the theory band"></canvas></div>
+        <figcaption><h3>Futures: CME Oct-26 β on LME 3M</h3><p class="sub">Over 1-, 5- and 10-day changes, Jun–Sep 2026, tariff-news days left out. Green: the CME Oct-26 Rotterdam DP contract as control (no US tariff, from 15 Jun). Grey: pre-tariff baseline from the LME MW contract, monthly changes.</p></figcaption>
+        <div class="cw"><canvas id="c-rcme" role="img" aria-label="Dot plot of the CME Oct-26 MW and Rotterdam DP betas on LME 3M by horizon against the pre-tariff baseline and the theory band"></canvas></div>
         <p class="take" id="t-rcme"></p>
         <details class="data" data-chart="c-rcme"><summary>Data table</summary><div class="tbl"></div></details>
       </figure>
@@ -366,17 +366,17 @@ document.getElementById("t-implied").innerHTML =
   `Backing the rate out of parity gives <b>${Math.round(IR.actual_25)}% and ${Math.round(IR.actual_50)}%</b> in the two regimes. The forward premium implied <b>${Math.round(IR.fwd_50)}%</b> in Jul–Dec 2025.`;
 document.getElementById("t-err").innerHTML =
   `Before the tariff the curve was unbiased: <b>${sgn(FS.pre.mean_err)} $/t</b> over ${FS.pre.n} forecasts. Under 50% before Hormuz it came in below the outcome <b>in all ${FS.t50.n}</b>, by ${n0(FS.t50.mean_err)} $/t on average (Newey–West t = ${FS.t50.t_nw.toFixed(1)}). Since Hormuz: ${sgn(FS.hormuz.mean_err)} $/t over ${FS.hormuz.n}.`;
-const RM = RK.monthly, RB = RK.cme_betas, RP = RK.policy, b10 = RB[2], b5 = RB[1];
+const RM = RK.monthly, RB = RK.cme_betas, RP = RK.policy, b10 = RB[2], b5 = RB[1], DB = RK.dp_betas, d10 = DB[2];
 document.getElementById("t-cme").innerHTML =
   `From June to September the contract <b>tracked half of every LME move</b>, apart from tariff news: on 20 Aug it fell <b>${n0(-RP.drop)} $/t</b> when a 25% rate for Canada was signalled, and recovered ${n0(RP.rise)} $/t when talks collapsed.`;
 document.getElementById("t-rmon").innerHTML =
   `At 50% before Hormuz the MW β rose from <b>${f2(RM.pre.mw)} to ${f2(RM.t50.mw)}</b> while DP's fell to ${f2(RM.t50.dp)}: the rise is US-specific. After Hormuz both rose. Pooled, each point of tariff adds ${RK.pooled.c.toFixed(2)} points of β (s.e. ${RK.pooled.se.toFixed(2)}; theory 1), so only <b>about half the link</b> shows up month to month.`;
 document.getElementById("t-rcme").innerHTML =
-  `On 10-day changes β = <b>${b10.beta.toFixed(2)}</b> (95% CI ${(b10.beta - 1.96 * b10.se).toFixed(2)}–${(b10.beta + 1.96 * b10.se).toFixed(2)}), inside the theory band and above the pre-tariff ${RK.fut_base.beta.toFixed(2)}. Within a day it is only ${RB[0].beta.toFixed(2)}: the thin contract settles a few days behind LME.`;
+  `On 10-day changes β = <b>${b10.beta.toFixed(2)}</b> (95% CI ${(b10.beta - 1.96 * b10.se).toFixed(2)}–${(b10.beta + 1.96 * b10.se).toFixed(2)}), inside the theory band and above the pre-tariff ${RK.fut_base.beta.toFixed(2)}. Within a day it is only ${RB[0].beta.toFixed(2)}: the thin contract settles a few days behind LME. The <b>Rotterdam DP control</b> stays near zero (${f2(d10.beta)}, s.e. ${d10.se.toFixed(2)}), so the link is the US tariff, not a tight market: MW minus DP moves <b>${d10.diff.toFixed(2)}</b> (s.e. ${d10.diff_se.toFixed(2)}) per $/t of LME.`;
 document.getElementById("t-h1").innerHTML =
   `<b>A premium position is no longer LME-neutral.</b> LME + a fixed premium leaves about t = 0.5 t of LME per tonne in the premium leg, so US-delivered metal needs ~1.5 t of LME cover, not 1.`;
 document.getElementById("t-h2").innerHTML =
-  `<b>The overlay comes from the tariff rule, not a regression.</b> 0.5 t of LME per tonne cut the 10-day risk of an Oct-26 position from ${n0(b10.risk)} to ${n0(b10.risk_overlay)} $/t, and the 5-day risk from ${n0(b5.risk)} to ${n0(b5.risk_overlay)}. MW futures already carry it, so don't add it twice.`;
+  `<b>The overlay comes from the tariff rule, not a regression.</b> 0.5 t of LME per tonne cut the 10-day risk of an Oct-26 position from ${n0(b10.risk)} to ${n0(b10.risk_overlay)} $/t, and the 5-day risk from ${n0(b5.risk)} to ${n0(b5.risk_overlay)}. On the DP contract it raises the 10-day risk (${n0(d10.risk)} → ${n0(d10.risk_overlay)}): it belongs to the US tariff. MW futures already carry it, so don't add it twice.`;
 document.getElementById("t-h3").innerHTML =
   `<b>It can't hedge tariff news.</b> The 20 Aug move was ${Math.round(-RP.drop / RP.daily_sd)} times the usual daily move (${n0(RP.daily_sd)} $/t), and a cut to 25% halves the right overlay the same day. Tariff jumps need MW futures or contract terms.`;
 document.getElementById("t-ochg").innerHTML =
@@ -386,7 +386,7 @@ document.getElementById("t-cax").innerHTML =
 document.getElementById("t-prod").innerHTML =
   `By Q2 2026 scrap was <b>${pct(PC.Scrap.pct)}</b> and semis <b>${pct(PC.Semis.pct)}</b> against baseline. Crude's share of imports fell from ${Math.round(PC.crude_share.base)}% to ${Math.round(PC.crude_share.q2_26)}%, and total imports (${n0(PC.total.q2_26)} kt/month) were back at the pre-tariff level (${n0(PC.total.base)}).`;
 document.getElementById("src").innerHTML =
-  `Sources: LME (westmetall.com), USGS Mineral Industry Surveys, UN Comtrade (StatCan), LME Platts/Fastmarkets premium contracts, CME Aluminum MW US Transaction Premium Platts futures, Oct 2026 contract (Barchart.com). Freight (Canada → Rotterdam, Canada → Midwest) 30/50/80 $/t low/mid/high. Full method and caveats in <a href="https://github.com/ricardo-sonda/al-mwp#readme">README.md</a> and <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/notebook.ipynb">notebook.ipynb</a>. Built by <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/scripts/build_dashboard.py">scripts/build_dashboard.py</a>.`;
+  `Sources: LME (westmetall.com), USGS Mineral Industry Surveys, UN Comtrade (StatCan), LME Platts/Fastmarkets premium contracts, CME Aluminum MW US Transaction Premium Platts and Aluminium European Premium Duty-Paid Platts futures, Oct 2026 contracts (Barchart.com). Freight (Canada → Rotterdam, Canada → Midwest) 30/50/80 $/t low/mid/high. Full method and caveats in <a href="https://github.com/ricardo-sonda/al-mwp#readme">README.md</a> and <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/notebook.ipynb">notebook.ipynb</a>. Built by <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/scripts/build_dashboard.py">scripts/build_dashboard.py</a>.`;
 
 /* ---------- chart plumbing ---------- */
 const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -643,7 +643,7 @@ function build() {
   const bandKey = { type: "scatter", label: "Theory at 50%: t to t + pre-tariff β", data: [], backgroundColor: alpha(C.blue, .25), borderColor: alpha(C.blue, .25) };
   const dotTip = names => ({ title: it => names[Math.round(it[0].raw.x)], label: c => { const b = c.raw.y, se = c.dataset.se[c.dataIndex];
     return ` ${c.dataset.label}: β ${b.toFixed(2)} (95% CI ${(b - 1.96 * se).toFixed(2)} to ${(b + 1.96 * se).toFixed(2)})`; } });
-  const yBeta = { min: -0.1, max: 1.0, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } };
+  const yBeta = { min: -0.2, max: 1.0, ticks: { stepSize: 0.2, callback: v => v.toFixed(1) } };
   const hi = RK.t + RK.beta_pre;
 
   /* 3b. monthly betas by regime */
@@ -662,14 +662,17 @@ function build() {
   const CL = ["Pre-tariff, monthly", "1 day", "5 days", "10 days"];
   make("c-rcme", { type: "scatter", data: { datasets: [
     dot("Pre-tariff: LME MW futures", [{ x: 0, b: RK.fut_base.beta, se: RK.fut_base.se }], C.neutral),
-    dot("Under 50%: CME Oct-26", RB.map((b, i) => ({ x: i + 1, b: b.beta, se: b.se })), C.blue),
+    dot("Under 50%: CME Oct-26 MW", RB.map((b, i) => ({ x: i + 1 - 0.1, b: b.beta, se: b.se })), C.blue),
+    dot("Control: CME Oct-26 Rotterdam DP", DB.map((b, i) => ({ x: i + 1 + 0.1, b: b.beta, se: b.se })), C.aqua),
     bandKey,
   ] }, options: merge(baseOpts({ interaction: { mode: "nearest", intersect: false, axis: "x" } }), {
     plugins: { refLines: { h: [{ y: 0, strong: true }, { y: RK.fut_base.beta, dash: true }] }, bands: { items: [{ x0: 0.6, x1: 3.5, y0: RK.t, y1: hi }] },
       tooltip: { callbacks: dotTip(CL) } },
     scales: { x: { type: "linear", min: -0.5, max: 3.5, afterBuildTicks: ax => { ax.ticks = [0, 1, 2, 3].map(value => ({ value })); }, ticks: { autoSkip: false, callback: v => Number.isInteger(v) && v >= 0 && v <= 3 ? [CL[v], `${v ? RB[v - 1].n : RK.fut_base.n} changes`] : "" } }, y: yBeta } }) },
-  () => ({ head: ["Change over", "Changes", "β", "s.e.", "R²", "Risk $/t", "With 0.5 t LME"], rows: [[CL[0], RK.fut_base.n, RK.fut_base.beta.toFixed(2), RK.fut_base.se.toFixed(2), "–", "–", "–"],
-    ...RB.map((b, i) => [CL[i + 1], b.n, b.beta.toFixed(2), b.se.toFixed(2), b.r2.toFixed(2), n0(b.risk), n0(b.risk_overlay)])] }));
+  () => ({ head: ["Contract", "Change over", "Changes", "β", "s.e.", "R²", "Risk $/t", "With 0.5 t LME"], rows: [["LME MW", CL[0], RK.fut_base.n, RK.fut_base.beta.toFixed(2), RK.fut_base.se.toFixed(2), "–", "–", "–"],
+    ...RB.map((b, i) => ["CME MW", CL[i + 1], b.n, b.beta.toFixed(2), b.se.toFixed(2), b.r2.toFixed(2), n0(b.risk), n0(b.risk_overlay)]),
+    ...DB.map((b, i) => ["CME DP (control)", CL[i + 1], b.n, b.beta.toFixed(2), b.se.toFixed(2), b.r2.toFixed(2), n0(b.risk), n0(b.risk_overlay)]),
+    ...DB.map((b, i) => ["MW − DP, common dates", CL[i + 1], b.diff_n, b.diff.toFixed(2), b.diff_se.toFixed(2), "–", "–", "–"])] }));
 
   /* 4a. US crude imports by origin */
   const O = D.flows_origin, OCOL = { "Canada": C.blue, "United Arab Emirates": C.orange, "Argentina": C.aqua, "India": C.yellow, "Bahrain": C.magenta, "Rest": C.neutral };

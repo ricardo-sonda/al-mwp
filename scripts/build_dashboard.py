@@ -206,15 +206,41 @@ l3m = lme.set_index("date")["three_month"]
 px = pd.concat([oct26.rename("fut"), l3m.rename("lme3m")], axis=1, join="inner").loc["2026-06-01":"2026-09-30"]
 POLICY_DAYS = pd.to_datetime(["2026-08-20", "2026-08-21", "2026-08-24"])
 T_NOW = 0.5
-cme_betas = []
-for h in (1, 5, 10):
-    ch = (px - px.shift(h)).dropna()
-    hit = pd.Series(px.index.isin(POLICY_DAYS), index=px.index).rolling(h, min_periods=1).max().astype(bool)
-    ch = ch[~hit.reindex(ch.index)]
+
+
+def h_day_changes(x, h):
+    ch = (x - x.shift(h)).dropna()
+    hit = pd.Series(x.index.isin(POLICY_DAYS), index=x.index).rolling(h, min_periods=1).max().astype(bool)
+    return ch[~hit.reindex(ch.index)]
+
+
+def futures_betas(x):
+    rows = []
+    for h in (1, 5, 10):
+        ch = h_day_changes(x, h)
+        fit = hac_ols(ch["fut"], ch["lme3m"], h)
+        rows.append({"h": h, "n": len(ch), "beta": float(fit.params["lme3m"]), "se": float(fit.bse["lme3m"]),
+                     "r2": float(fit.rsquared), "risk": float(ch["fut"].std()),
+                     "risk_overlay": float((ch["fut"] - T_NOW * ch["lme3m"]).std())})
+    return rows
+
+
+cme_betas = futures_betas(px)
+# Control: the CME Oct-26 Rotterdam DP contract (no US tariff), same regression; its history starts 15 Jun 2026.
+# MW − DP on the dates both trade gives β_MW − β_DP with a HAC error.
+cme_dp = pd.read_csv(DATA / "europe_duty_paid_premium_cme.csv", parse_dates=["date", "contract_month"])
+dp26 = cme_dp[cme_dp["contract_month"] == "2026-10-01"].set_index("date")["premium_usd_t"]
+px_dp = pd.concat([dp26.rename("fut"), l3m.rename("lme3m")], axis=1, join="inner").loc[:"2026-09-30"]
+dp_betas = futures_betas(px_dp)
+both = pd.concat([(px["fut"] - px_dp["fut"]).rename("fut"), px["lme3m"]], axis=1, join="inner").dropna()
+for row, h in zip(dp_betas, (1, 5, 10)):
+    ch = h_day_changes(both, h)
     fit = hac_ols(ch["fut"], ch["lme3m"], h)
-    cme_betas.append({"h": h, "n": len(ch), "beta": float(fit.params["lme3m"]), "se": float(fit.bse["lme3m"]),
-                      "r2": float(fit.rsquared), "risk": float(ch["fut"].std()),
-                      "risk_overlay": float((ch["fut"] - T_NOW * ch["lme3m"]).std())})
+    row.update({"diff": float(fit.params["lme3m"]), "diff_se": float(fit.bse["lme3m"]), "diff_n": len(ch)})
+dp_daily = px_dp["fut"].diff()
+dp_policy = {"rise": float(dp_daily.loc["2026-08-20"]), "fall": float(dp_daily.loc["2026-08-24"]),
+             "daily_sd": float(dp_daily.drop(POLICY_DAYS, errors="ignore").std()),
+             "stale": float((dp_daily.dropna() == 0).mean())}
 daily = px.diff().dropna()
 policy = {"drop": float(daily.loc["2026-08-20", "fut"]), "rise": float(daily.loc["2026-08-24", "fut"]),
           "daily_sd": float(daily.drop(POLICY_DAYS, errors="ignore")["fut"].std())}
@@ -236,7 +262,7 @@ for p0, d0 in month_ends.loc[:"2024-12"].items():
 base = pd.DataFrame(base).dropna()
 bf = hac_ols(base["dfut"], base["dlme"], 1)
 risk = {"monthly": risk_monthly, "pooled": risk_pooled, "beta_pre": BETA_PRE, "t": T_NOW,
-        "cme_betas": cme_betas, "cme_path": cme_path, "policy": policy,
+        "cme_betas": cme_betas, "cme_path": cme_path, "policy": policy, "dp_betas": dp_betas, "dp_policy": dp_policy,
         "fut_base": {"n": len(base), "beta": float(bf.params["dlme"]), "se": float(bf.bse["dlme"])}}
 
 # ---------------------------------------------------------------- 4. flows
