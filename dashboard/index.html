@@ -263,20 +263,17 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
       </figure>
       <figure class="panel">
         <figcaption><h3>What the tariff changed</h3><p class="sub">Causal links into the Midwest premium. The orange arrow is new.</p></figcaption>
-        <svg class="dag" viewBox="0 0 360 252" role="img" aria-label="Diagram: global supply and demand drives LME, the European premium and US supply and demand; the premium depends on the European premium (times 1 plus t), US supply and demand, and, under the tariff, directly on LME (times t)">
+        <svg class="dag" viewBox="0 0 360 252" role="img" aria-label="Diagram: global supply and demand drives LME and US supply and demand; the premium depends on US supply and demand and, under the tariff, directly on LME (times t)">
           <defs>
             <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--s-neutral)"/></marker>
             <marker id="ah-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--s-orange)"/></marker>
           </defs>
-          <g class="edge"><line x1="152" y1="50" x2="82" y2="103"/><line x1="180" y1="50" x2="180" y2="103"/><line x1="208" y1="50" x2="278" y2="103"/>
-            <line x1="180" y1="146" x2="180" y2="203"/><line x1="282" y1="146" x2="214" y2="203"/></g>
-          <line class="edge-new" x1="78" y1="146" x2="144" y2="203"/>
-          <text class="elab" x="174" y="170" text-anchor="end">× (1 + t)</text>
-          <text class="elab new" x="98" y="190" text-anchor="end">× t</text>
+          <g class="edge"><line x1="158" y1="50" x2="102" y2="103"/><line x1="202" y1="50" x2="258" y2="103"/><line x1="262" y1="146" x2="206" y2="203"/></g>
+          <line class="edge-new" x1="98" y1="146" x2="154" y2="203"/>
+          <text class="elab new" x="116" y="188" text-anchor="end">× t</text>
           <g class="node"><rect x="122" y="10" width="116" height="40" rx="6"/><text x="180" y="27">Global supply</text><text x="180" y="41">and demand</text></g>
-          <g class="node"><rect x="4" y="106" width="108" height="40" rx="6"/><text x="58" y="130">LME price</text></g>
-          <g class="node"><rect x="122" y="106" width="116" height="40" rx="6"/><text x="180" y="123">European premium</text><text x="180" y="137">(Rotterdam DP)</text></g>
-          <g class="node"><rect x="248" y="106" width="108" height="40" rx="6"/><text x="302" y="123">US supply</text><text x="302" y="137">and demand</text></g>
+          <g class="node"><rect x="24" y="106" width="108" height="40" rx="6"/><text x="78" y="130">LME price</text></g>
+          <g class="node"><rect x="228" y="106" width="108" height="40" rx="6"/><text x="282" y="123">US supply</text><text x="282" y="137">and demand</text></g>
           <g class="node"><rect x="122" y="206" width="116" height="40" rx="6"/><text x="180" y="230">Midwest premium</text></g>
         </svg>
         <p class="take">Before the tariff there was <b>no direct arrow</b>: the premium's LME beta was a statistical estimate. A duty on value adds one of size <b>t</b>, set by the tariff rule for as long as the premium sits at import parity.</p>
