@@ -70,3 +70,4 @@ Whether tariffs are priced in futures and optimal hedging
 
 Insight onto tariff change:
 Previously shocks to LME are independent of shocks to MWP. However, becuase of tariffs, MWP has delta with LME equal to tariff rate. Thus, shocks to LME are now correlated to shocks to MWP, and MWP has gained direct exposure to LME. 
+Built an import-parity model of US aluminium landed costs from LME, USGS, UN Comtrade and futures data; the Midwest premium fully priced in the 50% tariff.
