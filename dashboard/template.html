@@ -288,12 +288,12 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     </div>
     <div class="grid">
       <figure class="panel span2">
-        <figcaption><h3>US crude aluminium imports by origin</h3><p class="sub">kt per month, HTS 7601 (USGS).</p></figcaption>
-        <div class="cw"><canvas id="c-origin" role="img" aria-label="Stacked bar chart of US crude aluminium imports by origin"></canvas></div>
+        <figcaption><h3>US unwrought aluminium imports by origin</h3><p class="sub">kt per month, HTS 7601 (USGS).</p></figcaption>
+        <div class="cw"><canvas id="c-origin" role="img" aria-label="Stacked bar chart of US unwrought aluminium imports by origin"></canvas></div>
         <details class="data" data-chart="c-origin"><summary>Data table</summary><div class="tbl"></div></details>
       </figure>
       <figure class="panel">
-        <figcaption><h3>Change by origin under 50%</h3><p class="sub">% change in average monthly crude imports, Jul 25–Mar 26 against baseline.</p></figcaption>
+        <figcaption><h3>Change by origin under 50%</h3><p class="sub">% change in average monthly unwrought imports, Jul 25–Mar 26 against baseline.</p></figcaption>
         <div class="cw"><canvas id="c-ochg" role="img" aria-label="Horizontal bar chart of percentage change in imports by origin"></canvas></div>
         <p class="take" id="t-ochg"></p>
         <details class="data" data-chart="c-ochg"><summary>Data table</summary><div class="tbl"></div></details>
@@ -352,7 +352,7 @@ const KPIS = [
   { s: "Futures", label: "Tariff rate implied by the forward curve", value: `${Math.round(IR.fwd_50)}%`, unit: "vs 50% statutory", ctx: "LME curve's M03 at month-end, Jul–Dec 2025. The curve priced relief." },
   { s: "Futures", label: "M03 forecast miss under 50%", value: `${sgn(FS.t50.mean_err)}`, unit: "$/t", ctx: `Too low in all ${FS.t50.n} of ${FS.t50.n} forecasts (t = ${FS.t50.t_nw.toFixed(1)}). Pre-tariff: ${sgn(FS.pre.mean_err)} $/t over ${FS.pre.n}.` },
   { s: "Risk", label: "LME exposure inside the premium", value: `${RK.cme_betas[2].beta.toFixed(2)}`, unit: `vs ${RK.fut_base.beta.toFixed(2)} before`, ctx: `$/t of premium per $/t of LME: CME Oct-26 on 10-day changes. Theory at 50%: t = 0.5.` },
-  { s: "Flows", label: "US crude imports from Canada", value: pct(OC.Canada.pct), ctx: `${n0(OC.Canada.base)} → ${n0(OC.Canada.t50)} kt/month. Canada's share ${Math.round(D.canada_share.base)}% → ${Math.round(D.canada_share.t50)}%.` },
+  { s: "Flows", label: "US unwrought imports from Canada", value: pct(OC.Canada.pct), ctx: `${n0(OC.Canada.base)} → ${n0(OC.Canada.t50)} kt/month. Canada's share ${Math.round(D.canada_share.base)}% → ${Math.round(D.canada_share.t50)}%.` },
   { s: "Flows", label: "US share of Canada's unwrought exports", value: `${Math.round(CX.us_share_base)}% → ${Math.round(CX.us_share_t50)}%`, ctx: `Exports to the Netherlands rose from ~${Math.round(CX.nl_base)} to ~${Math.round(CX.nl_t50)} kt/month.` },
 ];
 document.getElementById("kpis").innerHTML = KPIS.map(k => `
@@ -380,11 +380,11 @@ document.getElementById("t-h2").innerHTML =
 document.getElementById("t-h3").innerHTML =
   `<b>It can't hedge tariff news.</b> The 20 Aug move was ${Math.round(-RP.drop / RP.daily_sd)} times the usual daily move (${n0(RP.daily_sd)} $/t), and a cut to 25% halves the right overlay the same day. Tariff jumps need MW futures or contract terms.`;
 document.getElementById("t-ochg").innerHTML =
-  `Total crude imports fell <b>${Math.round(-OC["Total crude"].pct)}%</b>. India (${pct(OC.India.pct)}) and the UAE (${pct(OC["United Arab Emirates"].pct)}) partly filled the gap.`;
+  `Total unwrought imports fell <b>${Math.round(-OC["Total unwrought"].pct)}%</b>. India (${pct(OC.India.pct)}) and the UAE (${pct(OC["United Arab Emirates"].pct)}) partly filled the gap.`;
 document.getElementById("t-cax").innerHTML =
   `The US share fell from <b>${Math.round(CX.us_share_base)}% to ${Math.round(CX.us_share_t50)}%</b>. Exports to the Netherlands rose from ~${Math.round(CX.nl_base)} to ~${Math.round(CX.nl_t50)} kt/month.`;
 document.getElementById("t-prod").innerHTML =
-  `By Q2 2026 scrap was <b>${pct(PC.Scrap.pct)}</b> and semis <b>${pct(PC.Semis.pct)}</b> against baseline. Crude's share of imports fell from ${Math.round(PC.crude_share.base)}% to ${Math.round(PC.crude_share.q2_26)}%, and total imports (${n0(PC.total.q2_26)} kt/month) were back at the pre-tariff level (${n0(PC.total.base)}).`;
+  `By Q2 2026 scrap was <b>${pct(PC.Scrap.pct)}</b> and semis <b>${pct(PC.Semis.pct)}</b> against baseline. unwrought's share of imports fell from ${Math.round(PC.unwrought_share.base)}% to ${Math.round(PC.unwrought_share.q2_26)}%, and total imports (${n0(PC.total.q2_26)} kt/month) were back at the pre-tariff level (${n0(PC.total.base)}).`;
 document.getElementById("src").innerHTML =
   `Sources: LME (westmetall.com), USGS Mineral Industry Surveys, UN Comtrade (StatCan), LME Platts/Fastmarkets premium contracts, CME Aluminum MW US Transaction Premium Platts and Aluminium European Premium Duty-Paid Platts futures, Sep–Nov 2026 contracts (Barchart.com). Freight (Canada → Rotterdam, Canada → Midwest) 30/50/80 $/t low/mid/high. Full method and caveats in <a href="https://github.com/ricardo-sonda/al-mwp#readme">README.md</a> and <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/notebook.ipynb">notebook.ipynb</a>. Built by <a href="https://github.com/ricardo-sonda/al-mwp/blob/main/scripts/build_dashboard.py">scripts/build_dashboard.py</a>.`;
 
@@ -675,7 +675,7 @@ function build() {
     ...DB.map((b, i) => ["MW − DP, common dates", CL[i + 1], b.diff_n, b.diff.toFixed(2), b.diff_se.toFixed(2), "–", "–", "–"]),
     ...Object.entries(RK.across).flatMap(([k, rows]) => rows.map((b, i) => [`CME ${k} MW`, CL[i + 1], b.n, b.beta.toFixed(2), b.se.toFixed(2), b.r2.toFixed(2), n0(b.risk), n0(b.risk_overlay)]))] }));
 
-  /* 4a. US crude imports by origin */
+  /* 4a. US unwrought imports by origin */
   const O = D.flows_origin, OCOL = { "Canada": C.blue, "United Arab Emirates": C.orange, "Argentina": C.aqua, "India": C.yellow, "Bahrain": C.magenta, "Rest": C.neutral };
   const oNames = Object.keys(O.series);
   const stack = (names, series, cols) => names.map((n, i) => ({ label: n === "United Arab Emirates" ? "UAE" : n, data: series[n], backgroundColor: cols[n],
@@ -687,7 +687,7 @@ function build() {
       scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: "kt / month", color: C.ink2 } } } }) });
 
   /* 4b. change by origin */
-  const oc = [...oNames, "Total crude"];
+  const oc = [...oNames, "Total unwrought"];
   make("c-ochg", { type: "bar", data: { labels: oc.map(n => n === "United Arab Emirates" ? "UAE" : n), datasets: [
     { label: "% change", data: oc.map(n => OC[n].pct), backgroundColor: oc.map(n => OCOL[n] || C.ink2), borderRadius: 3, borderSkipped: "start", maxBarThickness: 18 },
   ] }, options: merge(baseOpts({ indexAxis: "y", interaction: { mode: "nearest", intersect: true, axis: "y" } }), {
@@ -704,10 +704,10 @@ function build() {
       scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: "kt / month", color: C.ink2 } } } }) });
 
   /* 4d. by product */
-  const PQ = D.products, PCOL = { Crude: C.blue, Semis: C.orange, Scrap: C.aqua };
+  const PQ = D.products, PCOL = { unwrought: C.blue, Semis: C.orange, Scrap: C.aqua };
   make("c-prod", { type: "bar", data: { labels: PQ.quarters, datasets: stack(Object.keys(PQ.series), PQ.series, PCOL).map(d => ({ ...d, maxBarThickness: 44 })) },
     options: merge(baseOpts(), { plugins: { refLines: { h: [{ y: PC.total.base, dash: true, label: `pre-tariff total, ${n0(PC.total.base)} kt` }] },
-      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${n1(c.raw)} kt`, footer: it => { const t = it.reduce((s, x) => s + (x.raw || 0), 0); return `Total: ${n1(t)} kt · crude ${Math.round(it[0].raw / t * 100)}%`; } } } },
+      tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${n1(c.raw)} kt`, footer: it => { const t = it.reduce((s, x) => s + (x.raw || 0), 0); return `Total: ${n1(t)} kt · unwrought ${Math.round(it[0].raw / t * 100)}%`; } } } },
       scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: "kt / month", color: C.ink2 } } } }) });
 
   document.querySelectorAll("details.data[open]").forEach(renderTable);
