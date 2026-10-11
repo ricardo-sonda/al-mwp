@@ -88,6 +88,9 @@ section.strand { margin-top: 56px; display: grid; gap: 20px; }
 .strand-no { font: 700 15px/1 var(--f-data); color: var(--accent); grid-row: span 2; padding-top: 6px; }
 .strand-head h2 { font-size: clamp(22px, 2.6vw, 28px); font-weight: 600; line-height: 1.2; }
 .strand-head p { color: var(--ink-2); max-width: 72ch; }
+.strand-head > :not(.strand-no) { grid-column: 2; }
+.strand-head .eq { max-width: none; white-space: nowrap; overflow-x: auto; color: var(--ink); }
+.strand-head .footnote { font-style: italic; font-size: .9em; }
 
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -153,19 +156,20 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
   <header class="top">
     <span class="eyebrow">Section 232 · US Midwest aluminium premium · research summary</span>
     <h1>Has the Midwest premium priced in the Section 232 tariffs?</h1>
-    <p class="answer"><strong>The physical premium did, in full. The futures curve did not.</strong>
-      Import parity explains the premium at the statutory 25% and 50% rates, while the forward curve kept pricing a relief that never came.
-      The tariff also tied the premium directly to LME, so premium positions now carry LME risk, and it pushed Canadian metal toward Europe.</p>
+    <p class="answer"><strong>The physical premium implies a full pass-through, but the futures curve tells a more nuanced story.</strong>
+      Import parity explains the premium at the statutory 25% and 50% rates, while the forward curve suggests markets expected a tariff relief that didn't come.
+      The tariff also tied the premium directly to LME, so premium positions now carry LME risk. In terms of flow, total imports of unwrought aluminium fell by 25% compared to the pre-tariff baseline,
+      while import of semis and untariffed scraps rose by 52% and 83% respectively.</p>
     <a class="repo" href="https://github.com/ricardo-sonda/al-mwp"><span>Full repo here:</span> github.com/ricardo-sonda/al-mwp →</a>
     <p class="meta" id="asof"></p>
   </header>
 
   <ol class="timeline" aria-label="Tariff timeline">
     <li><span class="tl-date">12 Mar 2025</span><span class="tl-rate">25%</span><span class="tl-what">All exemptions end. First step that hits the Canadian tonne.</span></li>
-    <li><span class="tl-date">4 Jun 2025</span><span class="tl-rate">50%</span><span class="tl-what">Rate doubled for all origins (UK stays at 25%).</span></li>
-    <li><span class="tl-date">2 Mar 2026</span><span class="tl-rate">Hormuz</span><span class="tl-what">Strait closed. Gulf supply shock, kept apart from the tariff in every test.</span><span class="tl-chip">Not a tariff step</span></li>
-    <li><span class="tl-date">2 Apr 2026</span><span class="tl-rate">50%</span><span class="tl-what">Customs-value overhaul for derivatives. No change for unwrought metal.</span></li>
-    <li><span class="tl-date">20–22 Aug 2026</span><span class="tl-rate">50%</span><span class="tl-what">US signals a cut for Canada to 25%; talks collapse.</span></li>
+    <li><span class="tl-date">4 Jun 2025</span><span class="tl-rate">50%</span><span class="tl-what">Rate doubled for all origins.</span></li>
+    <li><span class="tl-date">2 Mar 2026</span><span class="tl-rate">Hormuz</span><span class="tl-what">Strait closed. The Hormuz shock adds a separate shock from tariff effects so I tried to keep the two apart in the analysis.</span><span class="tl-chip">Not a tariff step</span></li>
+    <li><span class="tl-date">2 Apr 2026</span><span class="tl-rate">50%</span><span class="tl-what">Customs-value overhaul for derivatives, but no change for unwrought metal.</span></li>
+    <li><span class="tl-date">20–22 Aug 2026</span><span class="tl-rate">50%</span><span class="tl-what">US signals a cut for Canada to 25%, but talks quickly collapse.</span></li>
   </ol>
 
   <div class="kpis" id="kpis"></div>
@@ -175,7 +179,17 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <div class="strand-head">
       <span class="strand-no">1</span>
       <h2>Price: the premium passed the tariff through in full</h2>
-      <p>Import parity is what it costs to land a Canadian tonne in the Midwest: LME + its European alternative premium (Rotterdam duty-paid, netted back) + freight + the tariff on that value. If the premium sits at parity, the tariff is fully passed through.</p>
+    <p>Canadian import parity is the Midwest price at which a Canadian smelter earns the same as selling in Europe.
+  When Canada's exports to the US fell, it was Europe's share that picked up, which suggests Europe is the
+  alternative market for a Canadian tonne. Import parity therefore means both routes give Canada the same
+  netback: what it receives after freight and duty. The parity model is:</p>
+    <p class="eq">(LME + MW premium) − freight Canada-US − tariff = (LME + Rotterdam duty-paid premium) − freight Canada-Europe
+      <br>where tariff = tariff rate × (LME + Rotterdam duty-paid premium − freight Canada-Europe)</p>
+    <p>Solving this equation for the tariff rate gives the market's implied tariff rate,
+  i.e. whether the 50% tariffs are being priced in the Midwest market.</p>
+    <p class="footnote">Canada earns the duty-paid premium (and not duty-unpaid) because of a Europe-Canada trade agreement.</p>
+  
+
     </div>
     <div class="grid">
       <figure class="panel span2">
@@ -204,7 +218,9 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <div class="strand-head">
       <span class="strand-no">2</span>
       <h2>Futures: the curve priced a relief that never came</h2>
-      <p>At each month-end, the M03 contract is the market's forecast of the premium two months out. It is tested against two benchmarks, no change and Canada parity at the rate in force, with Newey–West errors. Forecasts whose horizon spans a tariff step are left out of the statistics.</p>
+      <p>At each month-end, the M03 contract is the market's forecast of the premium two months out (assuming no risk premium). These forecasts are tested against two benchmarks, a "no-change" forecast and Canada parity forecast at the rate currently in force. Forecasts whose horizon spans a tariff step are left out of the statistics.</p>
+      <p>Why priced relief and not a supply shortage? A shortage would push the premium above import parity, since buyers would have to outbid the landed cost of imports to get metal. Instead, the premium sat at Canada parity at both 25% and 50%. The miss was also US-specific. Over the same months, LME futures missed by about 4% and the MW curve by about 22%. After removing the LME and Rotterdam surprises through the parity formula, about two thirds of the MW miss (~220 $/t) is still unexplained. At 50%, the premium's LME beta rose while Rotterdam's fell to zero, which a tight global market would not produce. And the curve moved on policy news: on 20 Aug 2026, when the US signalled a cut for Canada, the Oct-26 contract fell 298 $/t and regained it when talks collapsed, while the Rotterdam contract rose.</p>
+      <p class="footnote">I don't have futures data for the Rotterdam duty-paid premium over the entire period, which has two consequences. First, it can't be checked whether the European curve was also backwardated while the MW curve was. Second, the Canada parity forecast uses the spot premium in the month the forecast is made, which assumes the European premium stays unchanged for two months. M03 is a genuine forward-looking market price, so parity is not a like-for-like benchmark and should be read with care. Finally, a risk premium paid by hedgers may explain part of the miss alongside priced relief.</p>
     </div>
     <div class="grid">
       <figure class="panel span2">
@@ -232,7 +248,14 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <div class="strand-head">
       <span class="strand-no">3</span>
       <h2>Risk: the tariff ties the premium to LME</h2>
-      <p>Before the tariff, LME and the premium moved together only through common causes. A duty charged on value adds a direct link: at import parity the premium contains t × (LME + DP − freight), so ∂MWP/∂LME = t. At 50%, every 100 $/t on LME should add about 50 $/t to the premium, and the rise should be specific to the US.</p>
+      <p>Without tariffs, the LME and the premium move together only through common causes.
+        With tariffs, a duty charged on customs value adds a direct link. This is because
+        an ad valorem tariff adds a percentage charge on the full value of incoming metal,
+        which includes the LME price. This comes through in the parity model via the term
+        "tariff rate × (LME + DP − freight)", such that ∂MWP/∂LME = tariff rate. 
+        Thus, at 50% rates, every 100 $/t on LME should add about 50 $/t to the premium,
+        and the rise should be specific to the US. The data supports this, but it is only
+        significantly visible on 10-day rolling window changes as opposed to immediate reactions.</p>
     </div>
     <div class="grid three">
       <figure class="panel span2">
@@ -256,16 +279,16 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
           <g class="node"><rect x="228" y="106" width="108" height="40" rx="6"/><text x="282" y="123">US supply</text><text x="282" y="137">and demand</text></g>
           <g class="node"><rect x="122" y="206" width="116" height="40" rx="6"/><text x="180" y="230">Midwest premium</text></g>
         </svg>
-        <p class="take">Before the tariff there was <b>no direct arrow</b>: the premium's LME beta was a statistical estimate. A duty on value adds one of size <b>t</b>, set by the tariff rule for as long as the premium sits at import parity.</p>
+        <p class="take">Without tariffs there is <b>no direct arrow</b>, and the premium's LME beta is just a statistical estimate. A duty on value adds one of size <b>t</b>, set by the tariff rule for as long as the premium sits at import parity.</p>
       </figure>
       <figure class="panel">
-        <figcaption><h3>Monthly: premium β on LME by regime</h3><p class="sub">Slope of Δ premium on Δ LME cash, monthly averages, 95% intervals (HAC). Rotterdam DP is the control: no US tariff.</p></figcaption>
+        <figcaption><h3>Monthly: spot premium β on LME by regime</h3><p class="sub">Slope of Δ premium on Δ LME cash, monthly averages, 95% intervals (HAC). Rotterdam DP is the control: no US tariff.</p></figcaption>
         <div class="cw"><canvas id="c-rmon" role="img" aria-label="Dot plot of the MW premium and Rotterdam DP betas on LME by regime, with confidence intervals and the theory band"></canvas></div>
         <p class="take" id="t-rmon"></p>
         <details class="data" data-chart="c-rmon"><summary>Data table</summary><div class="tbl"></div></details>
       </figure>
       <figure class="panel">
-        <figcaption><h3>Futures: CME Oct-26 β on LME 3M</h3><p class="sub">Over 1-, 5- and 10-day changes, Jun–Sep 2026, tariff-news days left out. Green: the CME Oct-26 Rotterdam DP contract as control (no US tariff, from 15 Jun). Grey: pre-tariff baseline from the LME MW contract, monthly changes.</p></figcaption>
+        <figcaption><h3>Futures: CME Oct-26 β on LME 3M</h3><p class="sub">Over 1-, 5- and 10-day changes, Jun–Sep 2026, with tariff-news days left out. Green: the CME Oct-26 Rotterdam DP contract as control (no US tariff, from 15 Jun). Grey: pre-tariff baseline from the LME MW contract, monthly changes.</p></figcaption>
         <div class="cw"><canvas id="c-rcme" role="img" aria-label="Dot plot of the CME Oct-26 MW and Rotterdam DP betas on LME 3M by horizon against the pre-tariff baseline and the theory band"></canvas></div>
         <p class="take" id="t-rcme"></p>
         <details class="data" data-chart="c-rcme"><summary>Data table</summary><div class="tbl"></div></details>
@@ -317,10 +340,10 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <h2>Read these results with the caveats</h2>
     <ul class="cav-list">
       <li><b>Freight is an assumption.</b> No free series exists, so every parity result carries a low–high band.</li>
-      <li><b>Hormuz is a separate shock.</b> The Strait closed on 2 Mar 2026 and drove the jump in Rotterdam premiums and the fall in Gulf imports. Tariff attribution uses months up to Feb 2026.</li>
-      <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half the CME size. Stale quotes are flagged in every test, and the risk test uses CME settlements.</li>
-      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime. The CME risk test is one contract over 80 trading days, with only about 8 independent 10-day windows; Sep-26 and Nov-26 share its dates.</li>
-      <li><b>Rotterdam duty-unpaid after Oct 2025 is reconstructed</b> from duty-paid at an effective EU duty of 2.7% (backtest error ±13 $/t). The Canada route uses duty-paid, which is observed.</li>
+      <li><b>Hormuz is a separate shock.</b> The Strait closed on 2 Mar 2026 and drove the jump in Rotterdam premiums and the later fall in Gulf imports. The price, forecast and monthly β results use months up to Feb 2026. The flows comparison runs to Mar 2026, where a UAE spike of 79 kt lifts its change from about +10% to +27%, and the product shift is measured in Q2 2026, after the closure. The CME risk test (Jun–Sep 2026) falls entirely after Hormuz, so the Rotterdam DP control is what separates the tariff link from it.</li>
+      <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days. The 20 Aug 2026 move showed up two trading days late and at about a third of the CME size (−100 against −298 $/t). The forecast test flags stale month-end quotes, and the risk test uses CME settlements.</li>
+      <li><b>The Rotterdam DP control is thin.</b> Its CME contract starts on 15 Jun 2026 and 47% of its daily settlements are unchanged, which pulls its 1- and 5-day β towards zero. The 10-day control is the more reliable one.</li>
+      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime, and the Hormuz window only 4. The CME risk test is one contract over 80 trading days, with only about 8 independent 10-day windows; Sep-26 and Nov-26 share its dates.</li>
       <li><b>Aug 2026 is not fully fixed.</b> The last premium is M01 on 28 Aug.</li>
     </ul>
   </section>
@@ -348,12 +371,12 @@ document.getElementById("asof").textContent =
   `Data through: premium ${fmtM(D.data_through.premium)} · US imports ${fmtM(D.data_through.imports)} · Canadian exports ${fmtM(D.data_through.canada)}. All figures recomputed from the repo's data files.`;
 
 const KPIS = [
-  { s: "Price", label: "Tariff rate implied by the premium", value: `${Math.round(IR.actual_25)}% → ${Math.round(IR.actual_50)}%`, ctx: "In the 25% and 50% regimes, Canada route. Matches the statutory rates: full pass-through." },
-  { s: "Futures", label: "Tariff rate implied by the forward curve", value: `${Math.round(IR.fwd_50)}%`, unit: "vs 50% statutory", ctx: "LME curve's M03 at month-end, Jul–Dec 2025. The curve priced relief." },
-  { s: "Futures", label: "M03 forecast miss under 50%", value: `${sgn(FS.t50.mean_err)}`, unit: "$/t", ctx: `Too low in all ${FS.t50.n} of ${FS.t50.n} forecasts (t = ${FS.t50.t_nw.toFixed(1)}). Pre-tariff: ${sgn(FS.pre.mean_err)} $/t over ${FS.pre.n}.` },
-  { s: "Risk", label: "LME exposure inside the premium", value: `${RK.cme_betas[2].beta.toFixed(2)}`, unit: `vs ${RK.fut_base.beta.toFixed(2)} before`, ctx: `$/t of premium per $/t of LME: CME Oct-26 on 10-day changes. Theory at 50%: t = 0.5.` },
-  { s: "Flows", label: "US unwrought imports from Canada", value: pct(OC.Canada.pct), ctx: `${n0(OC.Canada.base)} → ${n0(OC.Canada.t50)} kt/month. Canada's share ${Math.round(D.canada_share.base)}% → ${Math.round(D.canada_share.t50)}%.` },
-  { s: "Flows", label: "US share of Canada's unwrought exports", value: `${Math.round(CX.us_share_base)}% → ${Math.round(CX.us_share_t50)}%`, ctx: `Exports to the Netherlands rose from ~${Math.round(CX.nl_base)} to ~${Math.round(CX.nl_t50)} kt/month.` },
+  { s: "Price", label: "Implied tariff rate in the parity model", value: `${Math.round(IR.actual_25)}% and ${Math.round(IR.actual_50)}%`, ctx: "In the 25% and 50% regimes, using the Canada route. The equivalence between implied and actual tariffs means full pass-through." },
+  { s: "Futures", label: "Tariff rate implied by the forward curve", value: `${Math.round(IR.fwd_50)}%`, unit: "vs 50% statutory", ctx: "Between Jul-Dec 25. The curve priced relief." },
+  { s: "Futures", label: "MW M03 forecast miss under the 50% regime", value: `${sgn(-FS.t50.mean_err)}`, unit: "$/t", ctx: `Too low in all ${FS.t50.n} of ${FS.t50.n} forecasts. Pre-tariff mean error was ${sgn(FS.pre.mean_err)} $/t` },
+  { s: "Risk", label: "LME exposure inside the MW premium", value: `${RK.cme_betas[2].beta.toFixed(2)}`, unit: `vs ${RK.fut_base.beta.toFixed(2)} before`, ctx: `Empirical MWP beta with the LME using 10-day changes on the CME Oct-26 contract. The beta should be 0.5 according to the model.` },
+  { s: "Flows", label: "US unwrought imports from Canada", value: pct(OC.Canada.pct), ctx: `Down from ${n0(OC.Canada.base)} to ${n0(OC.Canada.t50)} kt/month. Canada's total share of imports went from ${Math.round(D.canada_share.base)}% to ${Math.round(D.canada_share.t50)}%.` },
+  { s: "Flows", label: "US share of Canada's unwrought exports", value: `${Math.round(CX.us_share_base)}% to ${Math.round(CX.us_share_t50)}%`, ctx: `Exports to the Netherlands rose from ~${Math.round(CX.nl_base)} to ~${Math.round(CX.nl_t50)} kt/month.` },
 ];
 document.getElementById("kpis").innerHTML = KPIS.map(k => `
   <div class="kpi"><span class="strand">${k.s}</span><span class="label">${k.label}</span>
@@ -370,13 +393,13 @@ const RM = RK.monthly, RB = RK.cme_betas, RP = RK.policy, b10 = RB[2], b5 = RB[1
 document.getElementById("t-cme").innerHTML =
   `From June to September the contract <b>tracked half of every LME move</b>, apart from tariff news: on 20 Aug it fell <b>${n0(-RP.drop)} $/t</b> when a 25% rate for Canada was signalled, and recovered ${n0(RP.rise)} $/t when talks collapsed.`;
 document.getElementById("t-rmon").innerHTML =
-  `At 50% before Hormuz the MW β rose from <b>${f2(RM.pre.mw)} to ${f2(RM.t50.mw)}</b> while DP's fell to ${f2(RM.t50.dp)}: the rise is US-specific. After Hormuz both rose. Pooled, each point of tariff adds ${RK.pooled.c.toFixed(2)} points of β (s.e. ${RK.pooled.se.toFixed(2)}; theory 1), so only <b>about half the link</b> shows up month to month.`;
+  `At 50% before Hormuz the MW β rose from <b>${f2(RM.pre.mw)} to ${f2(RM.t50.mw)}</b> while DP's fell to ${f2(RM.t50.dp)}: the rise is US-specific. After Hormuz both rose. Pooled, each point of tariff adds ${RK.pooled.c.toFixed(2)} (${RK.pooled.se.toFixed(2)}) points of β (theory demands 1.0), so only <b>about half the link</b> shows up on a monthly-spot basis.`;
 document.getElementById("t-rcme").innerHTML =
   `On 10-day changes β = <b>${b10.beta.toFixed(2)}</b> (95% CI ${(b10.beta - 1.96 * b10.se).toFixed(2)}–${(b10.beta + 1.96 * b10.se).toFixed(2)}), inside the theory band and above the pre-tariff ${RK.fut_base.beta.toFixed(2)}. Within a day it is only ${RB[0].beta.toFixed(2)}: the thin contract settles a few days behind LME. The <b>Rotterdam DP control</b> stays near zero (${f2(d10.beta)}, s.e. ${d10.se.toFixed(2)}), so the link is the US tariff, not a tight market: MW minus DP moves <b>${d10.diff.toFixed(2)}</b> (s.e. ${d10.diff_se.toFixed(2)}) per $/t of LME. The Sep-26 and Nov-26 MW contracts give ${RK.across["Sep 26"][2].beta.toFixed(2)} and ${RK.across["Nov 26"][2].beta.toFixed(2)} on 10-day changes (same dates and LME moves, so a robustness check).`;
 document.getElementById("t-h1").innerHTML =
   `<b>A premium position is no longer LME-neutral.</b> LME + a fixed premium leaves about t = 0.5 t of LME per tonne in the premium leg, so US-delivered metal needs ~1.5 t of LME cover, not 1.`;
 document.getElementById("t-h2").innerHTML =
-  `<b>The overlay comes from the tariff rule, not a regression.</b> 0.5 t of LME per tonne cut the 10-day risk of an Oct-26 position from ${n0(b10.risk)} to ${n0(b10.risk_overlay)} $/t, and the 5-day risk from ${n0(b5.risk)} to ${n0(b5.risk_overlay)}. On the DP contract it raises the 10-day risk (${n0(d10.risk)} → ${n0(d10.risk_overlay)}): it belongs to the US tariff. MW futures already carry it, so don't add it twice.`;
+  `<b>The overlay comes from the tariff rule, not a regression.</b> 0.5 t of LME per tonne cut the 10-day risk of an Oct-26 position from ${n0(b10.risk)} to ${n0(b10.risk_overlay)} $/t, and the 5-day risk from ${n0(b5.risk)} to ${n0(b5.risk_overlay)}. On the DP contract it raises the 10-day risk (${n0(d10.risk)} to ${n0(d10.risk_overlay)}), meaning it belongs to the US tariff. MW futures already carry it, so don't add it twice.`;
 document.getElementById("t-h3").innerHTML =
   `<b>It can't hedge tariff news.</b> The 20 Aug move was ${Math.round(-RP.drop / RP.daily_sd)} times the usual daily move (${n0(RP.daily_sd)} $/t), and a cut to 25% halves the right overlay the same day. Tariff jumps need MW futures or contract terms.`;
 document.getElementById("t-ochg").innerHTML =

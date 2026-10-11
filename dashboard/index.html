@@ -163,7 +163,7 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <span class="eyebrow">Section 232 · US Midwest aluminium premium · research summary</span>
     <h1>Has the Midwest premium priced in the Section 232 tariffs?</h1>
     <p class="answer"><strong>The physical premium implies a full pass-through, but the futures curve tells a more nuanced story.</strong>
-      Import parity explains the premium at the statutory 25% and 50% rates, while the the forward curve suggests markets expected a tariff relief that didn't come.
+      Import parity explains the premium at the statutory 25% and 50% rates, while the forward curve suggests markets expected a tariff relief that didn't come.
       The tariff also tied the premium directly to LME, so premium positions now carry LME risk. In terms of flow, total imports of unwrought aluminium fell by 25% compared to the pre-tariff baseline,
       while import of semis and untariffed scraps rose by 52% and 83% respectively.</p>
     <a class="repo" href="https://github.com/ricardo-sonda/al-mwp"><span>Full repo here:</span> github.com/ricardo-sonda/al-mwp →</a>
@@ -346,10 +346,10 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <h2>Read these results with the caveats</h2>
     <ul class="cav-list">
       <li><b>Freight is an assumption.</b> No free series exists, so every parity result carries a low–high band.</li>
-      <li><b>Hormuz is a separate shock.</b> The Strait closed on 2 Mar 2026 and drove the jump in Rotterdam premiums and the fall in Gulf imports. Tariff attribution uses months up to Feb 2026.</li>
-      <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days, and the Aug 2026 move showed up two days late and at half the CME size. Stale quotes are flagged in every test, and the risk test uses CME settlements.</li>
-      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime. The CME risk test is one contract over 80 trading days, with only about 8 independent 10-day windows; Sep-26 and Nov-26 share its dates.</li>
-      <li><b>Rotterdam duty-unpaid after Oct 2025 is reconstructed</b> from duty-paid at an effective EU duty of 2.7% (backtest error ±13 $/t). The Canada route uses duty-paid, which is observed.</li>
+      <li><b>Hormuz is a separate shock.</b> The Strait closed on 2 Mar 2026 and drove the jump in Rotterdam premiums and the later fall in Gulf imports. The price, forecast and monthly β results use months up to Feb 2026. The flows comparison runs to Mar 2026, where a UAE spike of 79 kt lifts its change from about +10% to +27%, and the product shift is measured in Q2 2026, after the closure. The CME risk test (Jun–Sep 2026) falls entirely after Hormuz, so the Rotterdam DP control is what separates the tariff link from it.</li>
+      <li><b>The LME MW futures curve is stale.</b> Back months are unchanged on ~80% of days. The 20 Aug 2026 move showed up two trading days late and at about a third of the CME size (−100 against −298 $/t). The forecast test flags stale month-end quotes, and the risk test uses CME settlements.</li>
+      <li><b>The Rotterdam DP control is thin.</b> Its CME contract starts on 15 Jun 2026 and 47% of its daily settlements are unchanged, which pulls its 1- and 5-day β towards zero. The 10-day control is the more reliable one.</li>
+      <li><b>Small samples.</b> The 50% forecast test has 7 overlapping forecasts from one regime, and the Hormuz window only 4. The CME risk test is one contract over 80 trading days, with only about 8 independent 10-day windows; Sep-26 and Nov-26 share its dates.</li>
       <li><b>Aug 2026 is not fully fixed.</b> The last premium is M01 on 28 Aug.</li>
     </ul>
   </section>
@@ -377,9 +377,9 @@ document.getElementById("asof").textContent =
   `Data through: premium ${fmtM(D.data_through.premium)} · US imports ${fmtM(D.data_through.imports)} · Canadian exports ${fmtM(D.data_through.canada)}. All figures recomputed from the repo's data files.`;
 
 const KPIS = [
-  { s: "Price", label: "Implied tariff rate in the parity model", value: `${Math.round(IR.actual_25)}% and ${Math.round(IR.actual_50)}%`, ctx: "In the 25% and 50% regimes, using the Canada route. The equivalence between implied and actual tariffs mean full pass-through." },
+  { s: "Price", label: "Implied tariff rate in the parity model", value: `${Math.round(IR.actual_25)}% and ${Math.round(IR.actual_50)}%`, ctx: "In the 25% and 50% regimes, using the Canada route. The equivalence between implied and actual tariffs means full pass-through." },
   { s: "Futures", label: "Tariff rate implied by the forward curve", value: `${Math.round(IR.fwd_50)}%`, unit: "vs 50% statutory", ctx: "Between Jul-Dec 25. The curve priced relief." },
-  { s: "Futures", label: "CME M03 forecast miss under the 50% regime", value: `${sgn(-FS.t50.mean_err)}`, unit: "$/t", ctx: `Too low in all ${FS.t50.n} of ${FS.t50.n} forecasts. Pre-tariff mean error was ${sgn(FS.pre.mean_err)} $/t` },
+  { s: "Futures", label: "MW M03 forecast miss under the 50% regime", value: `${sgn(-FS.t50.mean_err)}`, unit: "$/t", ctx: `Too low in all ${FS.t50.n} of ${FS.t50.n} forecasts. Pre-tariff mean error was ${sgn(FS.pre.mean_err)} $/t` },
   { s: "Risk", label: "LME exposure inside the MW premium", value: `${RK.cme_betas[2].beta.toFixed(2)}`, unit: `vs ${RK.fut_base.beta.toFixed(2)} before`, ctx: `Empirical MWP beta with the LME using 10-day changes on the CME Oct-26 contract. The beta should be 0.5 according to the model.` },
   { s: "Flows", label: "US unwrought imports from Canada", value: pct(OC.Canada.pct), ctx: `Down from ${n0(OC.Canada.base)} to ${n0(OC.Canada.t50)} kt/month. Canada's total share of imports went from ${Math.round(D.canada_share.base)}% to ${Math.round(D.canada_share.t50)}%.` },
   { s: "Flows", label: "US share of Canada's unwrought exports", value: `${Math.round(CX.us_share_base)}% to ${Math.round(CX.us_share_t50)}%`, ctx: `Exports to the Netherlands rose from ~${Math.round(CX.nl_base)} to ~${Math.round(CX.nl_t50)} kt/month.` },

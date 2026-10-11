@@ -288,13 +288,13 @@ for c in list(fl.columns):
     b, a = fl[c].loc[BASE[0]:BASE[1]].mean(), fl[c].loc[T50[0]:T50[1]].mean()
     origin_change[c] = {"base": float(b), "t50": float(a), "pct": float((a / b - 1) * 100)}
 tc = fl.sum(axis=1)
-origin_change["Total crude"] = {"base": float(tc.loc[BASE[0]:BASE[1]].mean()), "t50": float(tc.loc[T50[0]:T50[1]].mean())}
-origin_change["Total crude"]["pct"] = (origin_change["Total crude"]["t50"] / origin_change["Total crude"]["base"] - 1) * 100
+origin_change["Total unwrought"] = {"base": float(tc.loc[BASE[0]:BASE[1]].mean()), "t50": float(tc.loc[T50[0]:T50[1]].mean())}
+origin_change["Total unwrought"]["pct"] = (origin_change["Total unwrought"]["t50"] / origin_change["Total unwrought"]["base"] - 1) * 100
 canada_share = {"base": float(fl["Canada"].loc[BASE[0]:BASE[1]].mean() / tc.loc[BASE[0]:BASE[1]].mean() * 100),
                 "t50": float(fl["Canada"].loc[T50[0]:T50[1]].mean() / tc.loc[T50[0]:T50[1]].mean() * 100)}
 
 prod = tot[["crude_t", "semis_t", "scrap_t"]].loc["2024-01-01":] / 1e3
-prod.columns = ["Crude", "Semis", "Scrap"]
+prod.columns = ["unwrought", "Semis", "Scrap"]
 q = prod.resample("QS").mean()
 q = q[prod.resample("QS").size() == 3]          # full quarters only
 products = {"quarters": [f"Q{d.quarter} {d.year}" for d in q.index],
@@ -303,7 +303,7 @@ pb = prod.loc[BASE[0]:BASE[1]].mean()
 q2 = prod.loc["2026-04-01":"2026-06-01"].mean()
 product_change = {c: {"base": float(pb[c]), "q2_26": float(q2[c]), "pct": float((q2[c] / pb[c] - 1) * 100)}
                   for c in prod.columns}
-product_change["crude_share"] = {"base": float(pb["Crude"] / pb.sum() * 100), "q2_26": float(q2["Crude"] / q2.sum() * 100)}
+product_change["unwrought_share"] = {"base": float(pb["unwrought"] / pb.sum() * 100), "q2_26": float(q2["unwrought"] / q2.sum() * 100)}
 product_change["total"] = {"base": float(pb.sum()), "q2_26": float(q2.sum())}
 
 c7 = ca[ca["hs"] == 7601]
