@@ -241,6 +241,11 @@ dp_daily = px_dp["fut"].diff()
 dp_policy = {"rise": float(dp_daily.loc["2026-08-20"]), "fall": float(dp_daily.loc["2026-08-24"]),
              "daily_sd": float(dp_daily.drop(POLICY_DAYS, errors="ignore").std()),
              "stale": float((dp_daily.dropna() == 0).mean())}
+# Across contracts: Sep-26 and Nov-26 MW, each over its own liquid window (shares dates and LME moves with Oct-26)
+cme_across = {}
+for name, (a, b) in {"Sep 26": ("2026-04-16", "2026-08-31"), "Nov 26": ("2026-06-01", "2026-10-08")}.items():
+    ser = cme[cme["contract_month"] == pd.to_datetime(name, format="%b %y")].set_index("date")["premium_usd_t"]
+    cme_across[name] = futures_betas(pd.concat([ser.rename("fut"), l3m.rename("lme3m")], axis=1, join="inner").loc[a:b])
 daily = px.diff().dropna()
 policy = {"drop": float(daily.loc["2026-08-20", "fut"]), "rise": float(daily.loc["2026-08-24", "fut"]),
           "daily_sd": float(daily.drop(POLICY_DAYS, errors="ignore")["fut"].std())}
@@ -262,7 +267,7 @@ for p0, d0 in month_ends.loc[:"2024-12"].items():
 base = pd.DataFrame(base).dropna()
 bf = hac_ols(base["dfut"], base["dlme"], 1)
 risk = {"monthly": risk_monthly, "pooled": risk_pooled, "beta_pre": BETA_PRE, "t": T_NOW,
-        "cme_betas": cme_betas, "cme_path": cme_path, "policy": policy, "dp_betas": dp_betas, "dp_policy": dp_policy,
+        "cme_betas": cme_betas, "cme_path": cme_path, "policy": policy, "dp_betas": dp_betas, "dp_policy": dp_policy, "across": cme_across,
         "fut_base": {"n": len(base), "beta": float(bf.params["dlme"]), "se": float(bf.bse["dlme"])}}
 
 # ---------------------------------------------------------------- 4. flows
