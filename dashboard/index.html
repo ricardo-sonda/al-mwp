@@ -93,6 +93,9 @@ section.strand { margin-top: 56px; display: grid; gap: 20px; }
 .strand-no { font: 700 15px/1 var(--f-data); color: var(--accent); grid-row: span 2; padding-top: 6px; }
 .strand-head h2 { font-size: clamp(22px, 2.6vw, 28px); font-weight: 600; line-height: 1.2; }
 .strand-head p { color: var(--ink-2); max-width: 72ch; }
+.strand-head > :not(.strand-no) { grid-column: 2; }
+.strand-head .eq { max-width: none; white-space: nowrap; overflow-x: auto; color: var(--ink); }
+.strand-head .footnote { font-style: italic; font-size: .9em; }
 
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -182,14 +185,17 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <div class="strand-head">
       <span class="strand-no">1</span>
       <h2>Price: the premium passed the tariff through in full</h2>
-      <p>Canadian import parity is what it costs to sell a Canadian tonne of aluminium in the Midwest. 
-        When Canada's exports to the US fell, it was Europe's share that picked up. This suggests that the opportunity cost
-        of a Canadian tonne sold in the US is a Canadian tonne sold in Europe. Thus, import parity means that a smelter 
-        selling Canadian metal via either of these routes should receive the same amount.
-        The parity model used is therefore: 
-        <br>(LME + MW premium) + Freight from Canada to US = (LME + Rotterdam Duty-Paid premium) + Freight from Canada to Europe + tariff rate x (LME + Rotterdam Duty-Paid premium)
-        <br>  
-         If the premium sits at parity, the tariff is fully passed through.</p>
+    <p>Canadian import parity is the Midwest price at which a Canadian smelter earns the same as selling in Europe.
+  When Canada's exports to the US fell, it was Europe's share that picked up, which suggests Europe is the
+  alternative market for a Canadian tonne. Import parity therefore means both routes give Canada the same
+  netback: what it receives after freight and duty. The parity model is:</p>
+    <p class="eq">(LME + MW premium) − freight Canada-US − tariff = (LME + Rotterdam duty-paid premium) − freight Canada-Europe
+      <br>where tariff = tariff rate × (LME + Rotterdam duty-paid premium − freight Canada-Europe)</p>
+    <p>Solving this equation for the tariff rate gives the market's implied tariff rate,
+  i.e. whether the 50% tariffs are being priced in the Midwest market.</p>
+    <p class="footnote">Canada earns the duty-paid premium (and not duty-unpaid) because of a Europe-Canada trade agreement.</p>
+  
+
     </div>
     <div class="grid">
       <figure class="panel span2">
@@ -363,7 +369,7 @@ document.getElementById("asof").textContent =
 
 const KPIS = [
   { s: "Price", label: "Implied tariff rate in the parity model", value: `${Math.round(IR.actual_25)}% and ${Math.round(IR.actual_50)}%`, ctx: "In the 25% and 50% regimes, using the Canada route. The equivalence between implied and actual tariffs mean full pass-through." },
-  { s: "Futures", label: "Tariff rate implied by the forward curve", value: `${Math.round(IR.fwd_50)}%`, unit: "vs 50% statutory", ctx: "Between Aug 25 and Feb 26. The curve priced relief." },
+  { s: "Futures", label: "Tariff rate implied by the forward curve", value: `${Math.round(IR.fwd_50)}%`, unit: "vs 50% statutory", ctx: "Between Jul-Dec 25. The curve priced relief." },
   { s: "Futures", label: "CME M03 forecast miss under the 50% regime", value: `${sgn(-FS.t50.mean_err)}`, unit: "$/t", ctx: `Too low in all ${FS.t50.n} of ${FS.t50.n} forecasts. Pre-tariff mean error was ${sgn(FS.pre.mean_err)} $/t` },
   { s: "Risk", label: "LME exposure inside the MW premium", value: `${RK.cme_betas[2].beta.toFixed(2)}`, unit: `vs ${RK.fut_base.beta.toFixed(2)} before`, ctx: `Empirical MWP beta with the LME using 10-day changes on the CME Oct-26 contract. The beta should be 0.5 according to the model.` },
   { s: "Flows", label: "US unwrought imports from Canada", value: pct(OC.Canada.pct), ctx: `Down from ${n0(OC.Canada.base)} to ${n0(OC.Canada.t50)} kt/month. Canada's total share of imports went from ${Math.round(D.canada_share.base)}% to ${Math.round(D.canada_share.t50)}%.` },
