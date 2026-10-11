@@ -224,9 +224,27 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <div class="strand-head">
       <span class="strand-no">2</span>
       <h2>Futures: the curve expected a fall that never came</h2>
-      <p>At each month-end, the M03 contract is the market's forecast of the premium two months out (assuming no risk premium). These forecasts are tested against two benchmarks, a "no-change" forecast and Canada parity forecast at the rate currently in force. Forecasts whose horizon spans a tariff step are left out of the statistics.</p>
-      <p>Why was the curve so far below the premium? Expected relief is one part of the backwardation, but not all of it, and the data cannot cleanly split the parts. The case for relief: the miss was US-specific. Over the same months, LME futures missed by about 4% and the MW curve by about 22%. After removing the LME and Rotterdam surprises through the parity formula, about two thirds of the MW miss (~220 $/t) is still unexplained. The curve also moved on policy news: on 20 Aug 2026, when the US signalled a cut for Canada, the Oct-26 contract fell 298 $/t and regained it when talks collapsed, while the Rotterdam contract rose. Trade press read the backwardation the same way at the time (<a href="https://www.aluminummarketupdate.crugroup.com/global-trade/whats-next-for-canada-trade-talks-and-the-midwest-premium/">CRU, Oct 2025</a>). The case for a shortage: from Dec 2025 to Feb 2026 the premium sat above Canada parity even at the highest freight, by up to ~195 $/t, which is what buyers outbidding the landed cost of imports looks like. US stocks fell from about 750 kt to below 300 kt, and importers kept replacement stocks thin while the tariff might be cut (<a href="https://www.kitco.com/news/off-the-wire/2026-01-08/tariffs-and-low-stocks-propel-aluminium-costs-records-us-consumers">Reuters, Jan 2026</a>; <a href="https://www.hellenicshippingnews.com/?p=1121339">Platts, Feb 2026</a>). A US shortage is US-specific too, so the residual above does not rule it out. The two feed each other: expected relief makes holding duty-paid metal risky, which thins stocks and tightens the prompt month. A risk premium paid by hedgers may also be part of the gap.</p>
-      <p class="footnote">I don't have futures data for the Rotterdam duty-paid premium over the entire period, which has two consequences. First, it can't be checked whether the European curve was also backwardated while the MW curve was. Second, the Canada parity forecast uses the spot premium in the month the forecast is made, which assumes the European premium stays unchanged for two months. M03 is a genuine forward-looking market price, so parity is not a like-for-like benchmark and should be read with care.</p>
+      <p>At each month-end, the M03 contract is the market's forecast of 
+        the premium two months out (assuming no risk premium). These forecasts are tested against two benchmarks, a
+         "no-change" forecast and Canada parity forecast* at the rate currently in force. Forecasts whose horizon spans a
+          tariff step are left out of the statistics.</p>
+      <p>Why was the curve so far below the premium? I think it was due to a combination of 
+        local supply tightness and an expected tariff relief. An expected tariff relief makes it risky to order replacement metal
+        at the current prices. As US stocks fell from about 750 kt to below 300 kt, importers kept 
+        replacement orders thin, which may be explained by tariff relief expectations that would bring
+        down the premium. However, tariffs remained at 50%, and from Dec 2025 to Feb 2026 
+        the premium sat above Canada parity even at the highest freight assumptions, 
+        by up to ~195 $/t, which is precisely what one expects when buyers are outbidding the landed price due to 
+        supply shortages. Over the same months, MW futures missed by about 22% and the LME curve by about 4%. 
+        After removing the LME and DP surprises* through the parity formula, about two 
+        thirds of the MW miss (~220 $/t) is still unexplained, which are US-specific misses.
+        A risk premium paid by hedgers in an uneasy market may also be part of the gap.</p>
+      <p class="footnote">I don't have futures data for the Rotterdam duty-paid premium over the entire period, 
+        which has two consequences. First, it can't be checked whether the European curve was also backwardated while the
+         MW curve was. Second, the Canada parity forecast uses the spot premium in the month the forecast is made, 
+         which assumes the European premium stays unchanged for two months. M03 is a genuine forward-looking market price, 
+         so parity is not a like-for-like benchmark and should be read with care. The DP forward misses were also
+        calculated as misses on a "no-change" forecast.</p>
     </div>
     <div class="grid">
       <figure class="panel span2">
