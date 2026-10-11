@@ -159,7 +159,7 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <p class="answer"><strong>The physical premium implies a full pass-through, but the futures curve tells a more nuanced story.</strong>
       Import parity explains the premium at the statutory 25% and 50% rates, while the forward curve suggests markets partially expected a tariff relief that didn't come.
       The tariff also tied the premium directly to LME, so premium positions now carry LME risk. In terms of flow, total imports of unwrought aluminium fell by 25% compared to the pre-tariff baseline,
-      while import of semis and untariffed scraps rose by 52% and 83% respectively.</p>
+      while imports of semis and untariffed scrap rose by 52% and 83% respectively.</p>
     <a class="repo" href="https://github.com/ricardo-sonda/al-mwp"><span>Full repo here:</span> github.com/ricardo-sonda/al-mwp →</a>
     <p class="meta" id="asof"></p>
   </header>
@@ -182,7 +182,7 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
     <p>Canadian import parity is the Midwest price at which a Canadian smelter earns the same as selling in Europe.
   When Canada's exports to the US fell, it was Europe's share that picked up, which suggests Europe is the
   alternative market for a Canadian tonne. Import parity therefore means both routes give Canada the same
-  netback: what it receives after freight and duty. The parity model is:</p>
+  netback, i.e. what it receives after freight and duty. The parity model is:</p>
     <p class="eq">(LME + MW premium) − freight Canada-US − tariff = (LME + Rotterdam duty-paid premium) − freight Canada-Europe
       <br>where tariff = tariff rate × (LME + Rotterdam duty-paid premium − freight Canada-Europe)</p>
     <p>Solving this equation for the tariff rate gives the market's implied tariff rate,
@@ -234,7 +234,7 @@ footer.src { margin-top: 28px; font: 12px/1.6 var(--f-data); color: var(--muted)
         After removing the LME and DP surprises* through the parity formula, about two 
         thirds of the MW miss (~220 $/t) is still unexplained, which are US-specific misses.
         A risk premium paid by hedgers in an uneasy market may also be part of the gap.</p>
-      <p class="footnote">I don't have futures data for the Rotterdam duty-paid premium over the entire period, 
+      <p class="footnote">* I don't have futures data for the Rotterdam duty-paid premium over the entire period, 
         which has two consequences. First, it can't be checked whether the European curve was also backwardated while the
          MW curve was. Second, the Canada parity forecast uses the spot premium in the month the forecast is made, 
          which assumes the European premium stays unchanged for two months. M03 is a genuine forward-looking market price, 
